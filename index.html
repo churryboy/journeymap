@@ -1,0 +1,2309 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>통신 3사 브랜드 여정 맵 — LG U+ · SKT · KT</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f4f1;
+      --navy: #2c3a5c;
+      --border: rgba(44,58,92,0.1);
+      --neutral: #7688a8;
+
+      /* Brand colors */
+      --lgu: #ff2e98;      /* LG U+ magenta */
+      --lgu-light: #fff0f8;
+      --lgu-mid: #ff7ec5;
+
+      --skt: #3617CE;      /* SKT dark blue */
+      --skt-light: #eeebfb;
+      --skt-mid: #7b62e0;
+
+      --kt: #111111;       /* KT black */
+      --kt-light: #f0f0f0;
+      --kt-mid: #666666;
+
+      --opp: #3d7a52;
+      --opp-light: #EDF5F0;
+      --risk: #8f3030;
+      --risk-light: #FAECEC;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--navy);
+      min-height: 100vh;
+      overflow-x: auto;
+    }
+
+    header {
+      padding: 36px 56px 24px;
+    }
+    .header-label {
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--lgu); margin-bottom: 8px;
+    }
+    header h1 {
+      font-size: 28px; font-weight: 700;
+      color: var(--navy); line-height: 1.2; margin-bottom: 8px;
+    }
+    header p { font-size: 13px; color: var(--neutral); line-height: 1.65; }
+
+    /* Cluster widgets */
+    .context-bar {
+      display: flex; gap: 12px; padding: 0 56px 24px; flex-wrap: wrap;
+    }
+    .cluster-widget {
+      display: flex; align-items: center; gap: 16px;
+      padding: 14px 20px; border-radius: 10px;
+      background: white; border: 1.5px solid var(--border);
+      cursor: pointer; transition: all 0.16s;
+      box-shadow: 0 1px 6px rgba(44,58,92,0.05);
+      min-width: 196px; user-select: none;
+    }
+    .cluster-widget:hover {
+      border-color: var(--navy);
+      box-shadow: 0 4px 16px rgba(44,58,92,0.13);
+      transform: translateY(-2px);
+    }
+    .cluster-widget.no-data {
+      opacity: 0.38; cursor: not-allowed; pointer-events: none;
+      filter: grayscale(0.4);
+    }
+    .cw-journey {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .cw-brand {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 3px 9px; border-radius: 5px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.03em;
+    }
+    .cw-brand.skt { background: var(--skt-light); color: var(--skt); }
+    .cw-brand.lgu { background: var(--lgu-light); color: var(--lgu); }
+    .cw-brand.kt  { background: var(--kt-light);  color: var(--kt); }
+    .cw-arrow-icon { font-size: 13px; color: var(--neutral); }
+    .cw-meta { margin-left: auto; text-align: right; }
+    .cw-count { display: block; font-size: 20px; font-weight: 700; color: var(--navy); line-height: 1; }
+    .cw-count-unit { font-size: 11px; font-weight: 400; color: var(--neutral); }
+    .cw-action { font-size: 9px; color: #aab5cc; margin-top: 4px; display: block; letter-spacing: 0.03em; }
+
+    /* Modal overlay */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(18,24,42,0.74);
+      z-index: 2000; display: flex;
+      align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.22s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal-box {
+      background: white; border-radius: 16px;
+      width: min(94vw, 980px); height: min(88vh, 700px);
+      display: flex; flex-direction: column;
+      box-shadow: 0 28px 72px rgba(18,24,42,0.28);
+      transform: translateY(16px) scale(0.98);
+      transition: transform 0.22s cubic-bezier(0.34,1.36,0.64,1);
+      overflow: hidden;
+    }
+    .modal-overlay.open .modal-box { transform: translateY(0) scale(1); }
+    .modal-header {
+      display: flex; align-items: center; gap: 14px;
+      padding: 18px 24px; border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .modal-cluster-pill {
+      display: flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 100px;
+      font-size: 11px; font-weight: 700;
+      background: var(--navy); color: white;
+    }
+    .modal-cluster-pill .pill-from,
+    .modal-cluster-pill .pill-to { font-size: 10px; opacity: 0.75; }
+    .modal-cluster-pill .pill-arrow { opacity: 0.5; }
+    .modal-header h2 { font-size: 15px; font-weight: 700; flex: 1; color: var(--navy); }
+    .modal-count-badge {
+      font-size: 11px; color: var(--neutral);
+      background: rgba(44,58,92,0.06); padding: 3px 10px;
+      border-radius: 100px;
+    }
+    .modal-close {
+      width: 30px; height: 30px; border-radius: 50%;
+      border: none; background: rgba(44,58,92,0.07);
+      cursor: pointer; font-size: 16px; color: var(--navy);
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s; flex-shrink: 0;
+    }
+    .modal-close:hover { background: rgba(44,58,92,0.15); }
+    .modal-body {
+      display: flex; flex: 1; overflow: hidden;
+    }
+    .modal-sidebar {
+      width: 210px; flex-shrink: 0;
+      border-right: 1px solid var(--border);
+      padding: 20px 16px; overflow-y: auto;
+      background: #fafafa;
+    }
+    .sidebar-section-label {
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--neutral); margin-bottom: 10px;
+    }
+    .participant-item {
+      padding: 10px 12px; border-radius: 8px;
+      margin-bottom: 6px; cursor: pointer;
+      transition: background 0.12s; border: 1.5px solid transparent;
+    }
+    .participant-item:hover { background: rgba(44,58,92,0.06); }
+    .participant-item.active {
+      background: var(--navy); border-color: var(--navy);
+      color: white;
+    }
+    .pi-name { font-size: 12px; font-weight: 600; display: block; }
+    .pi-sub  { font-size: 10px; color: var(--neutral); margin-top: 2px; display: block; }
+    .participant-item.active .pi-sub { color: rgba(255,255,255,0.6); }
+    .no-data-side {
+      padding: 16px 0; text-align: center;
+      font-size: 11px; color: #c0c8d8;
+    }
+    .modal-main {
+      flex: 1; overflow-y: auto; display: flex; flex-direction: column;
+    }
+    .video-section {
+      flex-shrink: 0; background: #141c2f;
+      display: flex; align-items: center; justify-content: center;
+      gap: 20px; padding: 28px 32px; min-height: 150px;
+    }
+    .video-play-btn {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      border: 2px solid rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; cursor: pointer; color: white;
+      transition: background 0.14s; flex-shrink: 0;
+    }
+    .video-play-btn:hover { background: rgba(255,255,255,0.22); }
+    .video-info { color: white; }
+    .video-info strong { display: block; font-size: 14px; margin-bottom: 4px; }
+    .video-info span { font-size: 11px; color: rgba(255,255,255,0.46); }
+    .video-no-data {
+      font-size: 11px; color: rgba(255,255,255,0.3);
+      text-align: center;
+    }
+    .transcript-section { padding: 20px 24px; flex: 1; }
+    .transcript-hdr {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .transcript-hdr-label {
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.16em; text-transform: uppercase; color: var(--neutral);
+    }
+    .transcript-msg { margin-bottom: 10px; }
+    .msg-role {
+      font-size: 8px; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+    .msg-role.ai   { color: #7688a8; }
+    .msg-role.user { color: var(--lgu); }
+    .msg-body {
+      font-size: 12px; line-height: 1.72;
+      padding: 9px 12px; border-radius: 7px;
+      color: var(--navy);
+    }
+    .ai-msg   .msg-body { background: #f0f3f9; }
+    .user-msg .msg-body { background: #fef6ee; }
+    .msg-time { font-family: 'DM Mono', monospace; font-size: 9px; color: #aab5cc; margin-left: 6px; }
+
+    /* Legend */
+    .legend-bar {
+      display: flex; align-items: center;
+      gap: 18px; padding: 0 56px 14px; flex-wrap: wrap;
+    }
+    .leg-item { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--neutral); }
+    .leg-line { width: 28px; height: 3px; border-radius: 2px; }
+    .leg-dot  { width: 10px; height: 10px; border-radius: 50%; }
+    .leg-divider { width: 1px; height: 16px; background: var(--border); }
+    .leg-note { font-size: 11px; color: #aab5cc; }
+
+    /* Filter controls */
+    .controls {
+      display: flex; gap: 8px; padding: 0 56px 20px; flex-wrap: wrap;
+    }
+    .ctrl-btn {
+      padding: 6px 14px; border-radius: 100px;
+      border: 1.5px solid var(--border);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 11px; font-weight: 500;
+      cursor: pointer; background: white; color: var(--navy);
+      transition: all 0.14s;
+    }
+    .ctrl-btn:hover { border-color: var(--navy); }
+    .ctrl-btn.active { background: var(--navy); color: white; border-color: var(--navy); }
+    .ctrl-btn.lgu.active  { background: var(--lgu); border-color: var(--lgu); color: white; }
+    .ctrl-btn.skt.active  { background: var(--skt); border-color: var(--skt); color: white; }
+    .ctrl-btn.kt.active   { background: var(--kt);  border-color: var(--kt);  color: white; }
+
+    /* Map container */
+    .map-container { padding: 0 56px 60px; min-width: 1060px; }
+
+    /* Phase banner */
+    .phases {
+      display: grid;
+      grid-template-columns: 44px repeat(10, 1fr);
+    }
+    .phase-spacer {}
+    .phase-block {
+      display: flex; align-items: center; justify-content: center;
+      height: 40px; font-size: 11px; font-weight: 700;
+      color: #fff; letter-spacing: 0.03em;
+    }
+    .phase-block:first-of-type { border-radius: 8px 0 0 0; }
+    .phase-block:last-of-type  { border-radius: 0 8px 0 0; }
+    .ph1 { background: #bf9898; grid-column: span 2; }
+    .ph2 { background: #b08080; grid-column: span 2; }
+    .ph3 { background: #a06868; grid-column: span 2; }
+    .ph4 { background: #8a5252; grid-column: span 2; }
+    .ph5 { background: #733c3c; grid-column: span 2; }
+
+    /* Chart */
+    .chart-outer {
+      display: flex; align-items: stretch;
+      background: white;
+      box-shadow: 0 2px 20px rgba(44,58,92,0.07);
+      position: relative; overflow: visible;
+    }
+    .y-axis {
+      width: 44px; flex-shrink: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: space-between;
+      padding: 28px 0 24px;
+      border-right: 1px solid var(--border);
+      background: #fafafa;
+    }
+    .y-axis .emoji-label {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 2px;
+    }
+    .y-axis .ico { font-size: 17px; }
+    .y-axis .txt { font-size: 8px; color: var(--neutral); }
+    .svg-wrapper { flex: 1; position: relative; min-height: 260px; }
+    svg.journey { width: 100%; height: 260px; display: block; overflow: visible; }
+
+    /* Tooltip */
+    .tooltip {
+      position: absolute; background: var(--navy); color: #fff;
+      border-radius: 10px; padding: 14px 16px; width: 290px;
+      font-size: 12px; line-height: 1.6;
+      pointer-events: none; opacity: 0;
+      transition: opacity 0.16s, transform 0.16s;
+      transform: translateY(6px); z-index: 100;
+      box-shadow: 0 8px 28px rgba(44,58,92,0.22);
+    }
+    .tooltip.visible { opacity: 1; transform: translateY(0); }
+    .tt-top {
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: #8fa3d8; margin-bottom: 8px;
+    }
+    .tt-brand {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 12px; font-weight: 700; margin-bottom: 5px;
+    }
+    .tt-brand .dot { width: 9px; height: 9px; border-radius: 50%; }
+    .tt-emo {
+      font-size: 10px; color: #8fa3d8;
+      margin-bottom: 9px; padding-bottom: 9px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .tt-quote {
+      font-style: italic; color: #c4d0e8;
+      font-size: 11px; line-height: 1.7; margin-bottom: 5px;
+    }
+    .tt-quote::before { content: '"'; }
+    .tt-quote::after  { content: '"'; }
+
+    /* Step labels */
+    .step-bar {
+      display: grid;
+      grid-template-columns: 44px repeat(10, 1fr);
+      background: #2c3a5c;
+    }
+    .step-spacer {}
+    .step-cell {
+      color: white; text-align: center;
+      padding: 8px 4px 7px; font-size: 9px; font-weight: 500;
+      border-right: 1px solid rgba(255,255,255,0.05);
+    }
+    .step-cell:last-child { border-right: none; }
+    .step-cell .num {
+      display: block; font-size: 8px; opacity: 0.4;
+      margin-bottom: 2px; font-family: 'DM Mono', monospace;
+    }
+
+    /* Grid rows */
+    .grid-row {
+      display: grid;
+      grid-template-columns: 44px repeat(10, 1fr);
+    }
+    .grid-row + .grid-row { border-top: 1px solid var(--border); }
+
+    /* Row label */
+    .row-label {
+      display: flex; align-items: center; justify-content: center;
+      padding: 8px 4px; border-right: 1px solid var(--border);
+    }
+    .row-label span {
+      font-size: 8px; font-weight: 700;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      color: var(--neutral); white-space: nowrap;
+      transform: rotate(-90deg); display: block;
+    }
+    .row-label.lbl-lgu  { background: var(--lgu-light); }
+    .row-label.lbl-skt  { background: var(--skt-light); }
+    .row-label.lbl-kt   { background: var(--kt-light); }
+    .row-label.lbl-opp  { background: var(--opp-light); }
+    .row-label.lbl-risk { background: var(--risk-light); }
+    .row-label.lbl-lgu  span { color: var(--lgu); }
+    .row-label.lbl-skt  span { color: var(--skt); }
+    .row-label.lbl-kt   span { color: var(--kt); }
+    .row-label.lbl-opp  span { color: var(--opp); }
+    .row-label.lbl-risk span { color: var(--risk); }
+
+    /* Content cells */
+    .cell-lgu, .cell-skt, .cell-kt, .cell-opp, .cell-risk {
+      padding: 9px 8px; font-size: 10.5px; line-height: 1.65;
+      border-right: 1px solid var(--border);
+    }
+    .cell-lgu:last-child, .cell-skt:last-child,
+    .cell-kt:last-child, .cell-opp:last-child, .cell-risk:last-child {
+      border-right: none;
+    }
+    .cell-lgu  { background: var(--lgu-light); }
+    .cell-skt  { background: var(--skt-light); }
+    .cell-kt   { background: var(--kt-light); }
+    .cell-opp  { background: var(--opp-light); }
+    .cell-risk { background: var(--risk-light); }
+
+    .cell-text { font-size: 10.5px; color: var(--navy); }
+    .cell-sub  { font-size: 9.5px; color: var(--neutral); margin-top: 4px; }
+
+    /* Source tags */
+    .src {
+      display: inline-block; font-size: 8px; font-weight: 600;
+      padding: 1px 5px; border-radius: 3px; margin-right: 3px;
+    }
+    .src-p1 { background: rgba(217,119,32,0.15); color: var(--lgu); }
+    .src-ch { background: rgba(184,28,28,0.12); color: var(--skt); }
+
+    /* Comp tags (기회요인·리스크 인라인 브랜드 칩) — :root 브랜드 팔레트와 .cw-brand와 동일 계열 */
+    .comp { display: inline-block; font-size: 8.5px; font-weight: 700; padding: 1px 5px; border-radius: 3px; margin: 1px 2px 1px 0; letter-spacing: 0.03em; }
+    .c-lgu { background: var(--lgu-light); color: var(--lgu); }
+    .c-skt { background: var(--skt-light); color: var(--skt); }
+    .c-kt  { background: var(--kt-light);  color: var(--kt); }
+
+    /* KT data-limited cells */
+    .cell-kt.limited {
+      opacity: 0.7;
+      background: repeating-linear-gradient(
+        135deg, var(--kt-light), var(--kt-light) 6px,
+        rgba(91,53,168,0.04) 6px, rgba(91,53,168,0.04) 12px
+      );
+    }
+    .kt-limited-note {
+      font-size: 9px; color: var(--kt); font-style: italic; margin-bottom: 4px;
+    }
+
+    footer.site-footer {
+      padding: 18px 56px 48px; font-size: 11px; color: #9aaac8;
+      border-top: 1px solid var(--border); margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-label">LG U+ · 아이폰2030 통신경험 인터뷰</div>
+  <h1>통신 3사 브랜드 여정 맵</h1>
+</header>
+
+<!-- Cluster widgets -->
+<div class="context-bar">
+  <div class="cluster-widget" onclick="openCluster('skt-lgu')">
+    <div class="cw-journey">
+      <span class="cw-brand skt">SKT</span>
+      <span class="cw-arrow-icon">→</span>
+      <span class="cw-brand lgu">LG U+</span>
+    </div>
+    <div class="cw-meta">
+      <span class="cw-count">1<span class="cw-count-unit">명</span></span>
+      <span class="cw-action">클릭해서 인터뷰 보기 ↗</span>
+    </div>
+  </div>
+  <div class="cluster-widget" onclick="openCluster('kt-lgu')">
+    <div class="cw-journey">
+      <span class="cw-brand kt">KT</span>
+      <span class="cw-arrow-icon">→</span>
+      <span class="cw-brand lgu">LG U+</span>
+    </div>
+    <div class="cw-meta">
+      <span class="cw-count">1<span class="cw-count-unit">명</span></span>
+      <span class="cw-action">클릭해서 인터뷰 보기 ↗</span>
+    </div>
+  </div>
+  <div class="cluster-widget" onclick="openCluster('lgu-skt')">
+    <div class="cw-journey">
+      <span class="cw-brand lgu">LG U+</span>
+      <span class="cw-arrow-icon">→</span>
+      <span class="cw-brand skt">SKT</span>
+    </div>
+    <div class="cw-meta">
+      <span class="cw-count">1<span class="cw-count-unit">명</span></span>
+      <span class="cw-action">클릭해서 인터뷰 보기 ↗</span>
+    </div>
+  </div>
+  <div class="cluster-widget no-data">
+    <div class="cw-journey">
+      <span class="cw-brand lgu">LG U+</span>
+      <span class="cw-arrow-icon">→</span>
+      <span class="cw-brand kt">KT</span>
+    </div>
+    <div class="cw-meta">
+      <span class="cw-count">0<span class="cw-count-unit">명</span></span>
+      <span class="cw-action">데이터 없음</span>
+    </div>
+  </div>
+</div>
+
+<!-- Legend -->
+<div class="legend-bar">
+  <div class="leg-item">
+    <div class="leg-line" style="background:var(--lgu)"></div>
+    LG U+ 고객 경험
+  </div>
+  <div class="leg-item">
+    <div class="leg-line" style="background:var(--skt); border-top:2px dashed var(--skt); height:0; border-radius:0"></div>
+    SKT 고객 경험
+  </div>
+  <div class="leg-item">
+    <div class="leg-line" style="background:var(--kt); border-top:2px dotted var(--kt); height:0; border-radius:0; opacity:0.6"></div>
+    KT (간접 참고)
+  </div>
+  <div class="leg-divider"></div>
+  <div class="leg-item"><div class="leg-dot" style="background:#5a8a4a"></div>긍정</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#d4a843"></div>중립</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#c9504a"></div>부담·실망</div>
+</div>
+
+<!-- Filter -->
+<div class="controls">
+  <button class="ctrl-btn active" data-filter="all">전체</button>
+  <button class="ctrl-btn lgu" data-filter="lgu">LG U+</button>
+  <button class="ctrl-btn skt" data-filter="skt">SKT</button>
+  <button class="ctrl-btn kt"  data-filter="kt">KT</button>
+</div>
+
+<div class="map-container">
+
+  <!-- Phase banner -->
+  <div class="phases">
+    <div class="phase-spacer"></div>
+    <div class="phase-block ph1">트리거</div>
+    <div class="phase-block ph2">결정</div>
+    <div class="phase-block ph3">개통·배송</div>
+    <div class="phase-block ph4">이용 경험</div>
+    <div class="phase-block ph5">이슈·추천</div>
+  </div>
+
+  <!-- Chart -->
+  <div class="chart-outer">
+    <div class="y-axis">
+      <div class="emoji-label"><span class="ico">😊</span><span class="txt">긍정</span></div>
+      <div class="emoji-label"><span class="ico">😐</span><span class="txt">중립</span></div>
+      <div class="emoji-label"><span class="ico">😟</span><span class="txt">부담</span></div>
+    </div>
+    <div class="svg-wrapper">
+      <svg class="journey" id="journeySVG" viewBox="0 0 1000 260" preserveAspectRatio="none"></svg>
+      <div class="tooltip" id="tooltip"></div>
+    </div>
+  </div>
+
+  <!-- Step labels -->
+  <div class="step-bar">
+    <div class="step-spacer"></div>
+    <div class="step-cell"><span class="num">01</span>전환 동기</div>
+    <div class="step-cell"><span class="num">02</span>정보 탐색</div>
+    <div class="step-cell"><span class="num">03</span>통신사 선택</div>
+    <div class="step-cell"><span class="num">04</span>개통 방식</div>
+    <div class="step-cell"><span class="num">05</span>배송·언박싱</div>
+    <div class="step-cell"><span class="num">06</span>온보딩</div>
+    <div class="step-cell"><span class="num">07</span>서비스 이용</div>
+    <div class="step-cell"><span class="num">08</span>네트워크 품질</div>
+    <div class="step-cell"><span class="num">09</span>CS 대응</div>
+    <div class="step-cell"><span class="num">10</span>추천 의향</div>
+  </div>
+
+  <!-- ── LG U+ Activities ── -->
+  <div class="grid-row" id="row-lgu">
+    <div class="row-label lbl-lgu"><span>LG U+</span></div>
+    <!-- 01 전환 동기 -->
+    <div class="cell-lgu">
+      <div class="cell-text">
+        <span class="src src-p1">P1 진입</span> 기기교체 계기로 새 서비스·앱 기대감에 U+ 선택<br>
+        <span class="src src-ch">이철희 이탈</span> 개인정보 유출 사건 → 즉각 탈퇴 결심
+      </div>
+    </div>
+    <!-- 02 정보 탐색 -->
+    <div class="cell-lgu">
+      <div class="cell-text">
+        <span class="src src-p1">P1</span> 멤버십 앱·웹사이트 디자인·기능 탐색. "SKT보다 신선하고 흥미로운 것 기대"
+      </div>
+      <div class="cell-sub">이철희 이탈 후 LG U+ 관련 탐색 없음</div>
+    </div>
+    <!-- 03 통신사 선택 -->
+    <div class="cell-lgu">
+      <div class="cell-text">
+        <span class="src src-p1">P1</span> "LG 대기업이니 서비스가 잘 될 거라는 막연한 기대로 선택"<br>
+        <span class="src src-ch">이철희</span> LG U+ 적극 거부. NPS 2점, 재가입 의향 없음
+      </div>
+    </div>
+    <!-- 04 개통 방식 -->
+    <div class="cell-lgu">
+      <div class="cell-text">
+        <span class="src src-p1">P1</span> 대리점 방문 개통, 핸드폰·통신사 동시 변경 상담. 무난하게 완료
+      </div>
+      <div class="cell-sub">이철희의 LG U+ 최초 개통 경험 미언급</div>
+    </div>
+    <!-- 05 배송·언박싱 -->
+    <div class="cell-lgu">
+      <div class="cell-text">
+        <span class="src src-p1">P1</span> 대리점 현장 수령 → 배송·언박싱 경험 없음
+      </div>
+      <div class="cell-sub">P1·이철희 모두 LG U+ 배송 경험 데이터 없음</div>
+    </div>
+    <!-- 06 온보딩 -->
+    <div class="cell-lgu">
+      <div class="cell-text">
+        <span class="src src-p1">P1</span> 앱을 들떠서 탐색 → 하루 이틀 후 "크게 다르지 않구나". 기대와 현실 괴리 체감
+      </div>
+      <div class="cell-sub">이철희: LG U+ 온보딩 경험 구체 언급 없음</div>
+    </div>
+    <!-- 07 서비스 이용 -->
+    <div class="cell-lgu">
+      <div class="cell-text">
+        <span class="src src-p1">P1</span> 데이터는 괜찮으나 통화 품질 저하 시작. 상대가 목소리 되묻는 빈도 증가<br>
+        <span class="src src-ch">이철희(과거)</span> 멤버십 혜택 기대 불일치 + 인터넷 불안정 경험
+      </div>
+    </div>
+    <!-- 08 네트워크 품질 -->
+    <div class="cell-lgu">
+      <div class="cell-text">
+        <span class="src src-p1">P1</span> 중요·민감한 통화 중 음질 불안정 → "조마조마한 불안감, 불필요한 에너지 소모"<br>
+        <span class="src src-ch">이철희(과거)</span> 인터넷 10분 완전 먹통 → 통신사에 민원 제기
+      </div>
+    </div>
+    <!-- 09 CS 대응 -->
+    <div class="cell-lgu">
+      <div class="cell-text">
+        <span class="src src-p1">P1</span> 이슈 제기해도 통신사에서 안내·소통 없음<br>
+        <span class="src src-ch">이철희(과거)</span> "와이파이 다시 잡아보세요" 상투적 안내 → "전혀 납득 안됨", 근본 미해결
+      </div>
+    </div>
+    <!-- 10 추천 의향 -->
+    <div class="cell-lgu">
+      <div class="cell-text">
+        <span class="src src-p1">P1</span> 비추천. "전화라는 기본 기능이 이렇게 불안정하면 실망이 크다"<br>
+        <span class="src src-ch">이철희</span> NPS 2점. "개인정보 유출로 절대 추천 안 함"
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SKT Activities ── -->
+  <div class="grid-row" id="row-skt">
+    <div class="row-label lbl-skt"><span>SKT</span></div>
+    <!-- 01 전환 동기 -->
+    <div class="cell-skt">
+      <div class="cell-text">
+        <span class="src src-p1">P1 이탈</span> "무료함, 가끔 인터넷 느린 느낌" → LG U+로 이동<br>
+        <span class="src src-ch">이철희 진입</span> LG U+ 이탈 후 대기업 신뢰 + AI 기능으로 SKT 선택
+      </div>
+    </div>
+    <!-- 02 정보 탐색 -->
+    <div class="cell-skt">
+      <div class="cell-text">
+        <span class="src src-ch">이철희</span> 유튜브·네이버카페 탐색. 자동녹음→GPT 연동 기능 발견 → "되게 매력적인 기능"
+      </div>
+      <div class="cell-sub">P1의 SKT 탐색 당시 데이터 없음 (이미 SKT 사용 중)</div>
+    </div>
+    <!-- 03 통신사 선택 -->
+    <div class="cell-skt">
+      <div class="cell-text">
+        <span class="src src-ch">이철희</span> AI 스피커 사은품 프로모션 + "대기업이라 믿음직스럽다"<br>
+        <span class="src src-p1">P1(회고)</span> "무난함이 사실 장점이었음을 뒤늦게 깨달았다"
+      </div>
+    </div>
+    <!-- 04 개통 방식 -->
+    <div class="cell-skt">
+      <div class="cell-text">
+        <span class="src src-ch">이철희</span> SKT 공식 웹사이트 온라인 개통. 로그인 비밀번호 기억 안 나서 소소한 마찰
+      </div>
+      <div class="cell-sub">P1의 SKT 가입 당시 개통 경험 미언급</div>
+    </div>
+    <!-- 05 배송·언박싱 -->
+    <div class="cell-skt">
+      <div class="cell-text">
+        <span class="src src-ch">이철희</span> 하루 지연이었으나 불만 미미. 언박싱 기대감 높았음. "처음 단말기와 눈이 마주쳤던 그 순간." 깔끔한 포장에 만족
+      </div>
+    </div>
+    <!-- 06 온보딩 -->
+    <div class="cell-skt">
+      <div class="cell-text">
+        <span class="src src-ch">이철희</span> 개통 완료 문자 多 수신. "너무 길어서 그런 게 왔구나 하고 신경 안 씀." 스팸방지 서비스는 문자 보고 실제 신청
+      </div>
+    </div>
+    <!-- 07 서비스 이용 -->
+    <div class="cell-skt">
+      <div class="cell-text">
+        <span class="src src-ch">이철희</span> 통신 품질 만족. 멤버십 혜택 기대보다 적어 아쉬움. "쓸만한 혜택을 문자로 바로바로 보내주면 더 좋겠다"<br>
+        <span class="src src-p1">P1(회고)</span> "무난했던 SKT가 사실 좋았던 것"
+      </div>
+    </div>
+    <!-- 08 네트워크 품질 -->
+    <div class="cell-skt">
+      <div class="cell-text">
+        <span class="src src-ch">이철희</span> 엘리베이터 불안정 불편함 (이해 가능한 수준). SKT 문제로 인식<br>
+        <span class="src src-p1">P1(과거)</span> 가끔 지방·엘리베이터에서 느린 순간 있었으나 전반적 무난
+      </div>
+    </div>
+    <!-- 09 CS 대응 -->
+    <div class="cell-skt">
+      <div class="cell-text">
+        <span class="src src-ch">이철희</span> SKT 이용 중 CS 경험 없음 (민원 필요 상황 없었음)
+      </div>
+      <div class="cell-sub">P1의 SKT 시절 CS 경험 언급 없음 → 무난했던 것으로 간접 추론</div>
+    </div>
+    <!-- 10 추천 의향 -->
+    <div class="cell-skt">
+      <div class="cell-text">
+        <span class="src src-p1">P1</span> 지인에게 SKT 추천. "장애·사고 없는 안정감이 진짜 가치"<br>
+        <span class="src src-ch">이철희</span> SKT NPS 8점. "혜택 약간 아쉽고 가끔 통화 끊김이 -2점 원인"
+      </div>
+    </div>
+  </div>
+
+  <!-- ── KT Activities (간접 참고) ── -->
+  <div class="grid-row" id="row-kt">
+    <div class="row-label lbl-kt"><span>KT</span></div>
+    <!-- 01 전환 동기 -->
+    <div class="cell-kt limited">
+      <div class="kt-limited-note">※ 간접 언급</div>
+      <div class="cell-text">P1이 LG U+와 함께 검토한 대안 통신사. 최종 미선택</div>
+    </div>
+    <!-- 02 정보 탐색 -->
+    <div class="cell-kt limited">
+      <div class="kt-limited-note">※ 간접 언급</div>
+      <div class="cell-text">P1이 멤버십 앱·웹 비교 시 언급. 구체 탐색 내용 없음</div>
+    </div>
+    <!-- 03 통신사 선택 -->
+    <div class="cell-kt limited">
+      <div class="kt-limited-note">※ 간접 언급</div>
+      <div class="cell-text">P1 최종 탈락. "LG U+가 더 신선해 보여서". 경합 끝에 미선택</div>
+    </div>
+    <!-- 04 개통 방식 -->
+    <div class="cell-kt limited">
+      <div class="kt-limited-note">※ 데이터 없음</div>
+      <div class="cell-text">P1·이철희 모두 KT 개통 경험 없음</div>
+    </div>
+    <!-- 05 배송·언박싱 -->
+    <div class="cell-kt limited">
+      <div class="kt-limited-note">※ 데이터 없음</div>
+      <div class="cell-text">직접 언급 없음</div>
+    </div>
+    <!-- 06 온보딩 -->
+    <div class="cell-kt limited">
+      <div class="kt-limited-note">※ 데이터 없음</div>
+      <div class="cell-text">직접 언급 없음</div>
+    </div>
+    <!-- 07 서비스 이용 -->
+    <div class="cell-kt limited">
+      <div class="kt-limited-note">※ 간접 참고</div>
+      <div class="cell-text">보고서 P2(KT→LG U+): "KT랑 지금이랑 비슷한 것 같습니다." 3사 유사 인식</div>
+    </div>
+    <!-- 08 네트워크 품질 -->
+    <div class="cell-kt limited">
+      <div class="kt-limited-note">※ 간접 참고</div>
+      <div class="cell-text">이철희: "엘리베이터 불안정은 3사 다 있는 일". 유플러스 속도는 과거 느렸다는 기억(P2)</div>
+    </div>
+    <!-- 09 CS 대응 -->
+    <div class="cell-kt">
+      <div class="cell-text">
+        보고서 P2: KT 사용 시절 네트워크 장애 발생 시 <strong>선제적 안내 경험 긍정적으로 언급</strong>
+      </div>
+      <div class="cell-sub">3사 중 CS 선제 안내에서 상대적 강점 데이터 존재</div>
+    </div>
+    <!-- 10 추천 의향 -->
+    <div class="cell-kt limited">
+      <div class="kt-limited-note">※ 간접 참고</div>
+      <div class="cell-text">보고서 P2: "3사 다 비슷, 저렴한 곳으로 추천하겠다" — KT 직접 추천/비추천 데이터 없음</div>
+    </div>
+  </div>
+
+  <!-- ── Opportunity ── -->
+  <div class="grid-row" id="row-opp">
+    <div class="row-label lbl-opp"><span>기회요인</span></div>
+    <div class="cell-opp">
+      <div class="cell-text">기기교체 시점 연계 번호이동 패키지 선제 제안</div>
+      <div class="cell-sub"><span class="comp c-lgu">LG U+</span> 이탈 예정 고객 보안 강화 메시지로 재유치 / <span class="comp c-skt">SKT</span> T직구 연계</div>
+    </div>
+    <div class="cell-opp">
+      <div class="cell-text">유튜브·커뮤니티에서 실사용 AI 기능 체험 콘텐츠 선점</div>
+      <div class="cell-sub"><span class="comp c-skt">SKT 에이닷</span> 자동녹음-GPT 연동 = 3사 중 이철희 선택의 결정적 요인</div>
+    </div>
+    <div class="cell-opp">
+      <div class="cell-text">AI 사은품 + 실사용 기능 결합 패키지로 선택 기준 구체화</div>
+      <div class="cell-sub"><span class="comp c-lgu">LG U+</span> 막연한 "대기업 기대"를 실증 콘텐츠로 전환 / <span class="comp c-kt">KT</span> 차별화 포인트 부재</div>
+    </div>
+    <div class="cell-opp">
+      <div class="cell-text">온라인 개통 UX 간소화: 패스 1-클릭 인증, 비밀번호 없는 개통</div>
+      <div class="cell-sub"><span class="comp c-skt">SKT</span>·<span class="comp c-lgu">LG U+</span>·<span class="comp c-kt">KT</span> 모두 온라인 마찰 개선 여지</div>
+    </div>
+    <div class="cell-opp">
+      <div class="cell-text">브랜딩된 웰컴 패키지로 언박싱 감동 포인트 조성</div>
+      <div class="cell-sub">이철희 언박싱 기대감 높음 → <span class="comp c-skt">SKT</span>는 Apple Store 수준 경험으로 차별화 가능</div>
+    </div>
+    <div class="cell-opp">
+      <div class="cell-text">"오늘 딱 하나" 개인화 온보딩: 즉시 체감 서비스 1개 타겟 안내</div>
+      <div class="cell-sub">스팸방지(이철희 실제 신청) 사례처럼 행동 전환 가능한 안내만 선별 발송</div>
+    </div>
+    <div class="cell-opp">
+      <div class="cell-text">"혜택 문자 바로바로" (이철희 직접 요청) → 주변 가맹점 실시간 알림</div>
+      <div class="cell-sub">아이폰×통신사 전용 사용법 콘텐츠 — <span class="comp c-skt">SKT</span>·<span class="comp c-lgu">LG U+</span>·<span class="comp c-kt">KT</span> 모두 미제공</div>
+    </div>
+    <div class="cell-opp">
+      <div class="cell-text">엘리베이터·지하 밀폐 공간 커버리지 강화 → 3사 중 명확한 차별 포인트</div>
+      <div class="cell-sub">단말기·통신사 문제 혼동 예방 → 가입 시 아이폰 모델별 궁합 안내</div>
+    </div>
+    <div class="cell-opp">
+      <div class="cell-text">민원 후 근본 원인 피드백 + 재발 여부 사후 알림 제공</div>
+      <div class="cell-sub"><span class="comp c-kt">KT</span> 선제 장애 안내 = 3사 중 유일 긍정 데이터 → <span class="comp c-lgu">LG U+</span>·<span class="comp c-skt">SKT</span> 벤치마크 필요</div>
+    </div>
+    <div class="cell-opp">
+      <div class="cell-text">SKT 8점→10점 조건: 멤버십 강화 + 통화 안정성. LG U+ NPS 회복: 보안 신뢰 재건이 전제</div>
+      <div class="cell-sub">P1: <span class="comp c-skt">SKT</span> "무난한 안정감"을 브랜드 약속으로 포지셔닝</div>
+    </div>
+  </div>
+
+  <!-- ── Risk ── -->
+  <div class="grid-row" id="row-risk">
+    <div class="row-label lbl-risk"><span>리스크</span></div>
+    <div class="cell-risk">
+      <div class="cell-text"><span class="comp c-lgu">LG U+</span> 개인정보 유출 = 즉각 이탈 트리거 (NPS 2점)</div>
+      <div class="cell-sub"><span class="comp c-skt">SKT</span> 무난함은 장점이나 이탈 방어 메시지 없음</div>
+    </div>
+    <div class="cell-risk">
+      <div class="cell-text">커뮤니티 통화품질 불만 후기 확산 → <span class="comp c-lgu">LG U+</span> 부정 연상</div>
+      <div class="cell-sub">탐색 단계에서 3사 차별점 희미 → 비교 기준 없이 이탈 결정</div>
+    </div>
+    <div class="cell-risk">
+      <div class="cell-text">AI 마케팅 과잉 → "부질없다" 인식 (이철희: "어차피 전화·카톡이 전부")</div>
+      <div class="cell-sub"><span class="comp c-lgu">LG U+ 익시오</span>·<span class="comp c-kt">KT AI</span>·<span class="comp c-skt">SKT 에이닷</span> 모두 실사용 차별화 부족</div>
+    </div>
+    <div class="cell-risk">
+      <div class="cell-text">온라인 인증 복잡도 → 이탈 가능성 (이철희: 비밀번호 기억 안 남)</div>
+      <div class="cell-sub"><span class="comp c-lgu">LG U+</span> 대리점 의존 vs <span class="comp c-skt">SKT</span> 온라인 채널 경험 단절</div>
+    </div>
+    <div class="cell-risk">
+      <div class="cell-text"><span class="comp c-lgu">LG U+</span> 대리점 수령 → 언박싱 경험 부재로 첫인상 손실</div>
+      <div class="cell-sub">배송 지연 선제 안내 없으면 기대 이하 첫인상</div>
+    </div>
+    <div class="cell-risk">
+      <div class="cell-text">과도한 온보딩 문자 → 스팸 인식, 무시 (이철희: "있어도 없어도 상관없다")</div>
+      <div class="cell-sub"><span class="comp c-lgu">LG U+ U+원</span>·<span class="comp c-skt">SKT T멤버십</span>·<span class="comp c-kt">KT 멤버십</span> 공통 문제</div>
+    </div>
+    <div class="cell-risk">
+      <div class="cell-text">멤버십 혜택 기대 > 현실 → 이탈 동기 누적 (이철희 SKT -2점 원인)</div>
+      <div class="cell-sub">3사 모두 혜택 인지율·실사용률 낮음 → 차별화 기회 동시에 존재</div>
+    </div>
+    <div class="cell-risk">
+      <div class="cell-text"><span class="comp c-lgu">LG U+</span> 통화품질 = P1 이탈 결정 요인. 단말기 문제 혼동으로 원인 파악 지연</div>
+      <div class="cell-sub"><span class="comp c-skt">SKT</span>도 엘리베이터 불안정 공통 문제 — 3사 품질 균등화 위험</div>
+    </div>
+    <div class="cell-risk">
+      <div class="cell-text">상투적 CS = 불신 강화 + 이탈 결심 심화 (P1·이철희 <span class="comp c-lgu">LG U+</span> 공통 경험)</div>
+      <div class="cell-sub">개인정보 유출 후 CS 무대응 = 극단적 비추천 구조 — <span class="comp c-kt">KT</span> 선제 안내 모델 유일 긍정</div>
+    </div>
+    <div class="cell-risk">
+      <div class="cell-text"><span class="comp c-lgu">LG U+</span> 개인정보 사건 = 장기 브랜드 훼손. 이탈 고객의 적극적 비추천 지속</div>
+      <div class="cell-sub">P1·이철희 두 명 모두 <span class="comp c-lgu">LG U+</span> 비추천 → 동일 사건 방향 재발 시 회복 불가</div>
+    </div>
+  </div>
+
+</div><!-- /map-container -->
+
+<footer class="site-footer">
+  데이터: <code>통신경험 - 이철희 - 남 -37.md</code> · <code>통신경험 1.md</code> · <code>아이폰2030_통신경험_인터뷰_보고서_0313.md</code> · <code>통신3사_여정별_도식화_및_비교분석.md</code> — Proby 내부용
+</footer>
+
+<script>
+const STEPS = 10, SVG_W = 1000, SVG_H = 260;
+const ML = 8, MR = 8, MT = 34, MB = 24;
+const CW = SVG_W - ML - MR, CH = SVG_H - MT - MB;
+
+function getX(i) { return ML + (i / (STEPS - 1)) * CW; }
+function getY(s) { return MT + (1 - s) * CH; }
+
+/* Brand emotion scores — cross-analyzed from both interviews */
+
+/* LG U+ — declining arc: high entry expectations, falling through reality */
+const lguData = [
+  { step:1, score:0.58, emotion:"neutral",
+    quotes:["P1 진입: 새 서비스·앱 기대감으로 LG U+ 선택 (기대감·긍정)",
+            "이철희 이탈: 개인정보 유출 사건으로 즉각 탈퇴 결심 (매우 부정)"] },
+  { step:2, score:0.62, emotion:"neutral",
+    quotes:["P1: 멤버십 앱·웹 디자인 탐색. 'SKT보다 신선하고 흥미로운 것 기대'"] },
+  { step:3, score:0.65, emotion:"happy",
+    quotes:["P1: 'LG 대기업이니까 서비스가 잘 될 거라는 막연한 기대로 선택'",
+            "이철희: LG U+ NPS 2점, 재가입 의향 없음"] },
+  { step:4, score:0.60, emotion:"neutral",
+    quotes:["P1: 대리점 방문 개통, 핸드폰·통신사 동시 변경 상담. 무난하게 완료"] },
+  { step:5, score:0.54, emotion:"neutral",
+    quotes:["P1: 대리점 현장 수령 → 배송·언박싱 경험 없음",
+            "LG U+ 배송 관련 직접 데이터 부재"] },
+  { step:6, score:0.44, emotion:"neutral",
+    quotes:["P1: 앱을 들떠서 탐색 → 하루 이틀 후 '크게 다르지 않구나'",
+            "기대와 현실의 괴리 체감 — 온보딩 실망"] },
+  { step:7, score:0.34, emotion:"frustrated",
+    quotes:["P1: 데이터는 괜찮으나 통화 품질 저하 시작. 상대방이 목소리 되묻는 빈도 증가",
+            "이철희(과거): 멤버십 혜택 기대 불일치 + 인터넷 불안정"] },
+  { step:8, score:0.20, emotion:"frustrated",
+    quotes:["P1: 중요 통화 중 음질 불안정 → '조마조마한 불안감, 불필요한 에너지 소모'",
+            "이철희(과거): 인터넷 10분 완전 먹통 → 통신사 민원 제기"] },
+  { step:9, score:0.18, emotion:"frustrated",
+    quotes:["P1: 이슈 제기해도 안내·소통 없음",
+            "이철희(과거): '와이파이 다시 잡아보세요' 상투적 안내 → '전혀 납득 안됨', 근본 미해결"] },
+  { step:10, score:0.18, emotion:"frustrated",
+    quotes:["P1: 비추천. '전화라는 기본 기능이 이렇게 불안정하면 실망이 크다'",
+            "이철희: NPS 2점. '개인정보 유출로 절대 추천 안 함'"] },
+];
+
+/* SKT — positive/stable arc */
+const sktData = [
+  { step:1, score:0.58, emotion:"neutral",
+    quotes:["P1 이탈: '무료함, 가끔 인터넷 느린 느낌' → LG U+로 이동 (아쉬움 없이)",
+            "이철희 진입: LG U+ 이탈 후 대기업 신뢰 + AI 기능으로 SKT 선택 (적극 선택)"] },
+  { step:2, score:0.68, emotion:"happy",
+    quotes:["이철희: 유튜브·네이버카페에서 자동녹음→GPT 연동 기능 발견 → '되게 매력적인 기능'"] },
+  { step:3, score:0.74, emotion:"happy",
+    quotes:["이철희: AI 스피커 사은품 프로모션 + '대기업이라 믿음직스럽다'",
+            "P1(회고): '무난함이 사실 장점이었음을 LG U+ 경험 후 뒤늦게 깨달았다'"] },
+  { step:4, score:0.60, emotion:"neutral",
+    quotes:["이철희: SKT 공식 웹사이트 온라인 개통. 로그인 비밀번호 기억 안 나서 소소한 마찰"] },
+  { step:5, score:0.78, emotion:"happy",
+    quotes:["이철희: 하루 지연이었으나 불만 미미. '처음 단말기와 눈이 마주쳤던 그 순간'",
+            "깔끔한 포장, 구성품 빼는 것 모두 만족"] },
+  { step:6, score:0.55, emotion:"neutral",
+    quotes:["이철희: 개통 완료 문자 多 수신. '너무 길어서 그런 게 왔구나 하고 신경 안 씀'",
+            "스팸방지 서비스는 문자 보고 실제 신청 → 타겟 안내 효과 확인"] },
+  { step:7, score:0.65, emotion:"happy",
+    quotes:["이철희: 통신 품질 만족. 멤버십 혜택 기대보다 적어 아쉬움",
+            "'쓸만한 혜택을 문자로 바로바로 보내주면 더 좋겠다'",
+            "P1(회고): '무난했던 SKT가 사실 좋았던 것이었다'"] },
+  { step:8, score:0.58, emotion:"neutral",
+    quotes:["이철희: 엘리베이터 불안정 불편함 (이해 가능한 수준)",
+            "P1(과거): 가끔 지방·엘리베이터에서 느린 순간 있었으나 전반적 무난"] },
+  { step:9, score:0.60, emotion:"neutral",
+    quotes:["이철희: SKT 이용 중 CS 경험 없음 (민원 필요 상황 없었음)",
+            "P1의 SKT 시절 CS 언급 없음 → 무난했던 것으로 간접 추론"] },
+  { step:10, score:0.73, emotion:"happy",
+    quotes:["P1: SKT 추천. '장애·사고 없는 안정감이 진짜 가치'",
+            "이철희: SKT NPS 8점. '혜택 약간 아쉽고 가끔 통화 끊김이 -2점 원인'"] },
+];
+
+/* KT — flat reference line (indirect data only) */
+const ktData = [
+  { step:1, score:0.55, emotion:"neutral", quotes:["P1이 전환 고려 시 LG U+와 함께 검토한 대안. 최종 미선택"] },
+  { step:2, score:0.56, emotion:"neutral", quotes:["P1 멤버십 앱·웹 비교 대상 언급. 구체 탐색 내용 없음"] },
+  { step:3, score:0.52, emotion:"neutral", quotes:["P1 최종 탈락. 'LG U+가 더 신선해 보여서'"] },
+  { step:4, score:0.56, emotion:"neutral", quotes:["P1·이철희 모두 KT 개통 경험 없음"] },
+  { step:5, score:0.56, emotion:"neutral", quotes:["직접 언급 없음"] },
+  { step:6, score:0.56, emotion:"neutral", quotes:["직접 언급 없음"] },
+  { step:7, score:0.58, emotion:"neutral", quotes:["보고서 P2(KT→LG U+): 'KT랑 지금이랑 비슷한 것 같습니다' — 3사 유사 인식"] },
+  { step:8, score:0.57, emotion:"neutral", quotes:["이철희: '엘리베이터 불안정은 3사 다 있는 일'", "P2: 과거 KT 시절 LG U+보다 속도 빠른 기억"] },
+  { step:9, score:0.65, emotion:"happy",  quotes:["보고서 P2: KT 사용 시절 네트워크 장애 선제 안내 경험 — 3사 중 유일 긍정 CS 데이터"] },
+  { step:10, score:0.56, emotion:"neutral", quotes:["보고서 P2: '3사 다 비슷, 저렴한 곳 추천' — 브랜드 충성도 낮음"] },
+];
+
+const emotionColors = { happy:'#5a8a4a', neutral:'#d4a843', frustrated:'#c9504a' };
+const emotionIcons  = { happy:'😊', neutral:'😐', frustrated:'😟' };
+const emotionLabel  = { happy:'긍정', neutral:'중립', frustrated:'부담·실망' };
+
+const svgEl = document.getElementById('journeySVG');
+const tipEl = document.getElementById('tooltip');
+
+function ns(t) { return document.createElementNS('http://www.w3.org/2000/svg', t); }
+
+function crPath(pts) {
+  let d = `M ${pts[0].x} ${pts[0].y}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(0,i-1)], p1 = pts[i],
+          p2 = pts[i+1], p3 = pts[Math.min(pts.length-1,i+2)];
+    d += ` C ${p1.x+(p2.x-p0.x)/6} ${p1.y+(p2.y-p0.y)/6}, ${p2.x-(p3.x-p1.x)/6} ${p2.y-(p3.y-p1.y)/6}, ${p2.x} ${p2.y}`;
+  }
+  return d;
+}
+
+function buildChart(filter) {
+  svgEl.innerHTML = '';
+  const defs = ns('defs');
+
+  function makeGrad(id, color) {
+    const g = ns('linearGradient'); g.id = id;
+    g.setAttribute('x1','0'); g.setAttribute('y1','0');
+    g.setAttribute('x2','0'); g.setAttribute('y2','1');
+    const s1 = ns('stop'); s1.setAttribute('offset','0%'); s1.setAttribute('stop-color',color); s1.setAttribute('stop-opacity','0.18');
+    const s2 = ns('stop'); s2.setAttribute('offset','100%'); s2.setAttribute('stop-color',color); s2.setAttribute('stop-opacity','0');
+    g.append(s1,s2); return g;
+  }
+  defs.append(makeGrad('gLgu','#ff2e98'), makeGrad('gSkt','#3617CE'), makeGrad('gKt','#111111'));
+  svgEl.appendChild(defs);
+
+  // Column stripes
+  for (let i=0;i<STEPS;i++) {
+    const x = getX(i), colW = CW/(STEPS-1);
+    const r = ns('rect'); r.setAttribute('x',x-colW/2); r.setAttribute('y',MT);
+    r.setAttribute('width',colW); r.setAttribute('height',CH);
+    r.setAttribute('fill', i%2===0?'rgba(44,58,92,0.022)':'transparent');
+    svgEl.appendChild(r);
+  }
+
+  // Guide lines
+  [0,0.5,1].forEach(v => {
+    const y = getY(v), l = ns('line');
+    l.setAttribute('x1',ML); l.setAttribute('y1',y); l.setAttribute('x2',SVG_W-MR); l.setAttribute('y2',y);
+    l.setAttribute('stroke','rgba(44,58,92,0.07)'); l.setAttribute('stroke-width','1');
+    l.setAttribute('stroke-dasharray', v===0.5?'5,5':'2,7');
+    svgEl.appendChild(l);
+  });
+
+  function drawLine(dataset, color, dash, fillGrad, brandKey, show, isKt) {
+    const alpha = show ? 1 : 0.08;
+    const pts = dataset.map((d,i) => ({x: getX(i), y: getY(d.score)}));
+    const pd  = crPath(pts);
+
+    // Fill
+    const fp = ns('path');
+    fp.setAttribute('d', `${pd} L ${pts[pts.length-1].x} ${getY(0)} L ${pts[0].x} ${getY(0)} Z`);
+    fp.setAttribute('fill', `url(#${fillGrad})`);
+    fp.style.opacity = show ? (isKt ? 0.5 : 1) : 0.05;
+    svgEl.appendChild(fp);
+
+    // Stroke
+    const sp = ns('path');
+    sp.setAttribute('d', pd); sp.setAttribute('fill','none');
+    sp.setAttribute('stroke', color);
+    sp.setAttribute('stroke-width', show ? (isKt?1.5:2.5) : 1);
+    sp.setAttribute('stroke-linecap','round'); sp.setAttribute('stroke-linejoin','round');
+    if (dash) sp.setAttribute('stroke-dasharray', isKt ? '3,5' : '8,4');
+    sp.style.opacity = show ? (isKt ? 0.5 : 1) : 0.1;
+    if (show && !isKt) {
+      sp.style.strokeDasharray = dash ? sp.getAttribute('stroke-dasharray') : 2000;
+      if (!dash) {
+        sp.style.strokeDashoffset = 2000;
+        sp.style.animation = 'drawLine 1.4s cubic-bezier(0.4,0,0.2,1) forwards';
+      }
+    }
+    svgEl.appendChild(sp);
+
+    // Dots
+    if (show) {
+      dataset.forEach((d,i) => {
+        const cx = getX(i), cy = getY(d.score);
+        const ec = emotionColors[d.emotion];
+
+        if (!isKt) {
+          const pulse = ns('circle');
+          pulse.setAttribute('cx',cx); pulse.setAttribute('cy',cy); pulse.setAttribute('r',7);
+          pulse.setAttribute('fill','none'); pulse.setAttribute('stroke',ec); pulse.setAttribute('stroke-width','1.5');
+          pulse.style.opacity=0;
+          pulse.style.animation=`pulse 2.2s ease-out ${0.1*i+0.8}s infinite`;
+          svgEl.appendChild(pulse);
+        }
+
+        const c = ns('circle');
+        c.setAttribute('cx',cx); c.setAttribute('cy',cy);
+        c.setAttribute('r', isKt ? 4 : 6);
+        c.setAttribute('fill', isKt ? 'rgba(91,53,168,0.4)' : ec);
+        c.setAttribute('stroke','white'); c.setAttribute('stroke-width','2');
+        c.style.cursor = isKt ? 'default' : 'pointer';
+        c.style.opacity = isKt ? 0.55 : 1;
+
+        if (!isKt) {
+          c.addEventListener('mouseenter', e => showTip(e, d, brandKey, color));
+          c.addEventListener('mousemove',  positionTip);
+          c.addEventListener('mouseleave', hideTip);
+          c.addEventListener('click', e => showTip(e, d, brandKey, color));
+        } else {
+          c.addEventListener('mouseenter', e => showTip(e, d, 'KT (참고)', color));
+          c.addEventListener('mousemove',  positionTip);
+          c.addEventListener('mouseleave', hideTip);
+        }
+        svgEl.appendChild(c);
+      });
+    }
+  }
+
+  const showLgu = filter==='all' || filter==='lgu';
+  const showSkt = filter==='all' || filter==='skt';
+  const showKt  = filter==='all' || filter==='kt';
+
+  drawLine(ktData,  '#111111', true,  'gKt',  'KT (참고)',  showKt,  true);
+  drawLine(sktData, '#3617CE', true,  'gSkt', 'SKT',       showSkt, false);
+  drawLine(lguData, '#ff2e98', false, 'gLgu', 'LG U+',     showLgu, false);
+}
+
+function showTip(e, d, brand, color) {
+  const qs = (d.quotes||[]).map(q=>`<div class="tt-quote">${q}</div>`).join('');
+  tipEl.innerHTML = `
+    <div class="tt-top">단계 ${d.step}</div>
+    <div class="tt-brand"><span class="dot" style="background:${color}"></span>${brand}</div>
+    <div class="tt-emo">${emotionIcons[d.emotion]} ${emotionLabel[d.emotion]}</div>
+    ${qs || `<div class="tt-quote" style="opacity:0.4">직접 인용 없음</div>`}
+  `;
+  tipEl.classList.add('visible');
+  positionTip(e);
+}
+function positionTip(e) {
+  const wr = document.querySelector('.svg-wrapper').getBoundingClientRect();
+  let l = e.clientX - wr.left + 16, t = e.clientY - wr.top - 10;
+  if (l + 300 > wr.width) l = e.clientX - wr.left - 300;
+  if (t < 0) t = 4;
+  tipEl.style.left = l+'px'; tipEl.style.top = t+'px';
+}
+function hideTip() { tipEl.classList.remove('visible'); }
+
+// Row visibility per filter
+function updateRows(filter) {
+  const rowLgu  = document.getElementById('row-lgu');
+  const rowSkt  = document.getElementById('row-skt');
+  const rowKt   = document.getElementById('row-kt');
+  if (filter === 'all') {
+    rowLgu.style.display = rowSkt.style.display = rowKt.style.display = 'grid';
+  } else {
+    rowLgu.style.display = filter === 'lgu' ? 'grid' : 'none';
+    rowSkt.style.display = filter === 'skt' ? 'grid' : 'none';
+    rowKt.style.display  = filter === 'kt'  ? 'grid' : 'none';
+  }
+}
+
+// Keyframes
+const sty = document.createElement('style');
+sty.textContent = `
+  @keyframes drawLine { to { stroke-dashoffset: 0; } }
+  @keyframes pulse { 0%{r:6;opacity:0.7} 100%{r:22;opacity:0} }
+`;
+document.head.appendChild(sty);
+
+// Filters
+document.querySelectorAll('.ctrl-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = btn.dataset.filter;
+    buildChart(f);
+    updateRows(f);
+  });
+});
+
+buildChart('all');
+</script>
+
+<!-- ───── PARTICIPANT MODAL ───── -->
+<div id="participantModal" class="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div id="modalClusterPill" class="modal-cluster-pill">
+        <span class="pill-from" id="pillFrom"></span>
+        <span class="pill-arrow">→</span>
+        <span class="pill-to" id="pillTo"></span>
+      </div>
+      <h2 id="modalTitle">참여자 그룹</h2>
+      <span id="modalCountBadge" class="modal-count-badge"></span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <aside class="modal-sidebar">
+        <div class="sidebar-section-label">참여자 목록</div>
+        <div id="participantList"></div>
+      </aside>
+      <main class="modal-main">
+        <div class="video-section" id="videoSection">
+          <div class="video-play-btn" id="videoPlayBtn" title="영상 재생 (준비 중)">▶</div>
+          <div class="video-info">
+            <strong id="videoParticipantName">—</strong>
+            <span id="videoStatusText">인터뷰 영상 (준비 중)</span>
+          </div>
+        </div>
+        <div class="transcript-section">
+          <div class="transcript-hdr">
+            <span class="transcript-hdr-label">원본 인터뷰 데이터</span>
+          </div>
+          <div id="transcriptContent"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─── TRANSCRIPT PARSER ─── */
+function parseTranscript(raw) {
+  const lines = raw.split('\n');
+  const raw_turns = [];
+  let cur = null;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const aiM   = line.match(/^AI 인터뷰어(\d+:\d+)$/);
+    const userM = line.match(/^참여자(\d+:\d+)$/);
+    if (aiM) {
+      if (cur) raw_turns.push(cur);
+      cur = { role:'ai', time:aiM[1], text:'' };
+    } else if (userM) {
+      if (cur) raw_turns.push(cur);
+      cur = { role:'user', time:userM[1], text:'' };
+    } else if (cur) {
+      const t = line.trim();
+      if (t) cur.text += (cur.text ? ' ' : '') + t;
+    }
+  }
+  if (cur) raw_turns.push(cur);
+  // Merge consecutive same-role turns
+  const merged = [];
+  for (const turn of raw_turns) {
+    if (merged.length && merged[merged.length-1].role === turn.role) {
+      merged[merged.length-1].text += ' ' + turn.text;
+    } else {
+      merged.push({...turn});
+    }
+  }
+  return merged;
+}
+
+/* ─── RAW TRANSCRIPT DATA ─── */
+const rawTranscripts = {
+
+p1: `AI 인터뷰어00:00
+안녕하세요 반갑습니다, 오늘 시간 내서 인터뷰에 참여해주셔서 감사합니다. 대화는 약 45분 정도 진행될 예정입니다. 제가 드리는 질문을 들으신 뒤, 답변을 하시면 되고, 답변이 끝나시면 활성화되는 버튼을 눌르시면 답변이 입력이 됩니다. 그럼 준비 되셨을까요?
+
+참여자00:18
+네
+
+참여자00:19
+네 어... 그냥 오랫동안 한 군데만 써왔는데 그냥 이제 핸드폰을 바꿀 시기가 돼가지고 바꿨는데 통신사를 다른 데를 써보면 어떨까라는 그냥 호기심이 생겨서 바꾸게 됐습니다.
+
+AI 인터뷰어00:20
+그럼 시작해보겠습니다. 우선 최근에 통신사를 변경하셨다고 알고 있습니다. 변경을 해야겠다고 마음 먹으신 계기가 있으신가요?
+
+AI 인터뷰어00:55
+호기심 때문에 바꾸셨다고 하셨는데, 혹시 기존 통신사에 불만족스러웠던 점은 없으셨나요?
+
+참여자01:03
+특별히 불만족스러웠던 건 없는 것 같아요. 근데 가끔씩 뭔가 인터넷들이 좀 인터넷이 좀 느린 느린 순간들이 있었던 것 같아서 그냥 다른 통신사가 더 빠를 것 같다라는 기대를 가지고 바꾸긴 했습니다.
+
+AI 인터뷰어01:25
+인터넷이 느렸던 순간들이 가끔 있었다고 하셨는데, 혹시 언제, 어디서, 얼마나 자주 그런 현상을 겪으셨나요?
+
+참여자01:36
+아, 뭐 정확하게 기억은 안 나지만 뭔가 차 타고 지방으로 그냥 뭐 드라이브나 여행 갈거나 할 때 좀 그랬던 경우나 엘리베이터에서 좀 안 터지거나 뭐 그런 상황들이었던 것 같아요.
+
+AI 인터뷰어01:59
+통신사 변경 전에 사용하던 통신사는 어디였나요? 그리고 당시 사용하시던 스마트폰 브랜드는 무엇이었나요?
+
+참여자02:08
+어... 저는 SKT를 사용했었고요. 그 당시에도 아이폰 사용했었습니다.
+
+AI 인터뷰어02:19
+이전에도 아이폰을 사용하셨는데, 아이폰을 특별히 선호하시는 이유가 있으신가요?
+
+참여자02:27
+저는 뭐 노트북도 애플을 쓰고 뭐 애플워치도 있고 그냥 애플 쪽으로 다 생태계를 통일시키는 중이라서 그래서 아이폰을 주로 사용합니다.
+
+AI 인터뷰어02:43
+아이폰을 사용하면서 통신 품질 관련해서 불만스러웠던 사례가 있으셨는지 궁금합니다
+
+참여자02:51
+어, 뭐 아까 말씀드렸던 그런 사례들도 다 아이폰일 때 발생했던 거긴 해서 그래서 네,
+
+참여자03:00
+어, 뭐 아까 말씀드렸던 그런 사례들도 다 아이폰일 때 발생했던 거긴 해서 그래서 네, 어, 지금 제가 이제 현재 LG U+랑 아이폰 조합을 쓰고 있는 건데 어... 뭐 나쁘지 않긴 합니다. 예, 나쁘지 않고 네, 아직까지는 네, 나쁘지 않게 잘 쓰고 있어요.
+
+AI 인터뷰어03:04
+현재 통신사 + 현재 단말기의 조합에 대한 의견이 궁금합니다. 과거부터 경험하셨던 통신 품질을 비교했을 때 현재의 조합은 어떤 편인가요? 가장 맘에드시는지, 가장 별로인지?
+
+AI 인터뷰어03:45
+현재 LG U+와 아이폰 조합을 사용하고 계신데, '나쁘지 않게 잘 쓰고 있다'고 하셨어요. 혹시 과거 통신 경험과 비교했을 때, 현재 조합에서 특별히 만족스러운 점이나 혹은 아쉬운 점이 있다면 어떤 부분이 있을까요?
+
+참여자04:05
+어, 뭐 예전에는 이제 말씀드린 대로 이렇게 가끔씩 인터넷이 안 터지는 구간이 있었는데 요즘에는 인터넷은 뭐 괜찮은데 전화... 전화 약간 품질이 조금 떨어지는 것 같다는 느낌이 좀 들긴 합니다.
+
+AI 인터뷰어04:35
+전화 품질이 떨어진다고 느끼시는 부분이 구체적으로 어떤 상황에서 발생하는지 좀 더 자세히 말씀해주시겠어요?
+
+참여자04:45
+어, 그냥 뭔가 통화를 할 때 상대방이 제 목소리를 좀 잘 못 들어서 되묻는 것 같은 경우가 예전보다 그냥 좀 더 많은 느낌인 것 같아요. 괜히 느낌적으로.
+
+AI 인터뷰어05:05
+현재 통신사에 대한 경험에 대해서 조금 더 질문 드리겠습니다. 일단, 현재 통신사의 네트워크 품질에 대해서는 만족스러운 편이신가요?
+
+참여자05:19
+음... 근데 뭐 대체적으로 만족스럽긴 해요. 뭐 크게 불만족스러운 정도는 아닌 것 같습니다.
+
+AI 인터뷰어05:32
+통화할 때 상대방이 목소리를 잘 못 들어서 되묻는 경우가 많아졌다고 하셨는데, 통화가 끊기거나 불안정한 경우는 없으신가요?
+
+참여자05:43
+어, 뭐 중간에 막 끊기거나 이런 일은 없고요. 어, 그냥 뭐 결국에는 잘 목소리를 못 듣고 이런 게 결국에는 좀 불안정한가 그런 게 아닌가라는 생각이 있긴 합니다.
+
+AI 인터뷰어06:03
+음질이 깨끗하지 않다고 느끼시는 이유가 상대방이 목소리를 잘 못 들어서 되묻는 경우가 많아졌기 때문인가요?
+
+참여자06:12
+네, 좀 그런 게 확실히 예전보다 더 있는 것 같긴 해요.
+
+AI 인터뷰어06:21
+통신사 쪽에서 네트워크 관련해서 안내를 받아보신 적이 있으신가요?
+
+참여자06:28
+어, 아니요, 그런 안내는 받아본 적 없습니다.
+
+AI 인터뷰어06:34
+현재 통신사 + 단말기를 사용하면서 가장 통신 품질이 불편했던 경우를 한번 떠올려봐주세요, 앞서 언급 하셨던 포인트와 겹쳐도 괜찮습니다. 해당 상황은 언제 어떤식으로 발생했던 불편함이었나요?
+
+참여자06:51
+어, 제가 어, 뭔가 좀 되게 약간 민감한 대화를 중요하지만 민감했던 어떤 대화를 해야 되는 상황이 있었는데 그래서 되게 어, 뭔가 이렇게 어떤 되게 사소한 표현이나 사소한 말투 이런 것도 되게 좀 신경을 써야 되는 그런 대화를 해야 됐던 상황이 있었거든요. 근데 이제 어, 자꾸 이제 음질이 좀 불안정하고 하니까 뭔가 이렇게 좀 어, 뭐라고 했어라고 되물어야 되는 경우도 있고 뭐 상대방도 다시 한번 말해 달라고 했던 그런 경우가 있는데 그때 되게 그냥 일반적인 대화가 아니라 좀 그런 중요한 대화였는데 그런 경험을 했었어서 저도 괜히 막 상대방이 뭔가 되게 안 좋게 생각하면은 어떤 어떨지라는 좀 그런 조마조마한 생각도 느끼면서 통화했던 기억이 나는데 그때가 좀 별로 안 좋았던 것 같아요.
+
+AI 인터뷰어07:57
+그 중요한 대화 중에 음질이 불안정해서 상대방이 되묻거나 다시 말해달라고 했던 경험이 얼마나 당황스러우셨을지 짐작이 갑니다. 혹시 그때 통화 품질이 좋지 않았던 것이 어느 정도 불편함으로 다가왔는지, 예를 들어 대화가 끊기거나 상대방 목소리가 잘 안 들리는 정도였는지 좀 더 자세히 말씀해주실 수 있을까요?
+
+참여자08:20
+어, 막 완전히 대화를 못할 정도는 아니고 어, 목소리가 뭐 잘 들리기도 목소리도 들렸고 대화도 다 했지만 어, 그냥 불필요하게 제가 뭔가 그 대화의 에너지를 어, 그냥 저는 약간 되게 물 흐르듯이 대화를 했었어야 되는 상황이었는데 막 조마조마하면서 아, 이 내가 이 말을 하는 거는 잘 들리겠지? 막 이런 이제 좀 불안감을 안고 대화했었던 기억이 납니다.
+
+AI 인터뷰어09:00
+음질이 불안정해서 대화가 완전히 끊기거나 상대방 목소리가 안 들릴 정도는 아니었지만, 대화에 더 많은 에너지를 쏟고 불안감을 느끼셨다고 이해했습니다. 혹시 그러한 통화 품질 문제가 왜 발생했다고 생각하시나요?
+
+참여자09:17
+어, 당연히 통신사 문제겠죠. 그러니까 뭐 그런 것들은 결국에는 통신사의 망이 좀 뭐 덜 깔렸거나 아니면 뭐 어떤 망 충돌이 있었거나 그런 이유 때문 아닐까요?
+
+AI 인터뷰어09:41
+그 불편함을 해결하기 위해 혹시 따로 시도해보신 방법이 있으신가요?
+
+참여자09:49
+어... 특별한 거 없고 그냥 인터넷에서 검색을 해보긴 했어요. 그러니까 원래 LG U+가 원래 이렇게 통화 품질이 좀 불안정한가요? 이런 식으로 인터넷으로 좀 찾아본 적은 있습니다.
+
+AI 인터뷰어10:10
+혹시 아사모 라는 온라인 커뮤니티를 알고 계신가요? 이런 커뮤니티를 통해 문제 해결이나 정보를 얻거나 하는게 있으신가요?
+
+참여자10:20
+어, 네, 어... 일단 저는 들어본 적은 없는 커뮤니티고 어, 아무래도 제가 인터넷 검색을 하면은 그런 데서 결국에는 글들이 끌어다져서 검색 결과에 나오는 거 아닐까요?
+
+AI 인터뷰어10:35
+감사합니다. 살짝 다른 주제로 넘어가보겠습니다. 이번에 통신사 변경을 하실 때 당시의 상황이 조금 궁금합니다. 일단 다른 통신사 대비 현재 통신사로 해야겠다는 '결정' 은 어떻게 내리신 건가요?
+
+참여자10:52
+어, 이 결정은 뭐 앞서 말씀드렸지만 사실 그냥 이제 원래 사용하던 핸드폰 기기가 너무 이제 오래돼서 기기 변경을 좀 해야겠다고 생각하고 있었는데 기왕 이번에 바꾸는 김에 그냥 뭔가 그냥 새로운 통신사로 가면은 새로운 서비스나 뭐 더 새로운 게 있겠지라는 좀 기대감, 막연한 기대감으로 어, 교체를 결심했었습니다.
+
+AI 인터뷰어11:29
+새로운 서비스에 대한 막연한 기대감 외에, 혹시 통신사 변경 시 받으셨던 특별한 사은품이나 프로모션 혜택 같은 것이 결정에 영향을 미치지는 않았나요?
+
+참여자11:45
+네, 딱히 뭐 프로모션 같은 거는 없었던 것 같고 저는 그냥 이제 어, 새로운 통신사의 어떤 그러니까 새로운 통신사에서는 뭐 어떤 서비스가 있을까, 어떤 고객 서비스나 있을지 아니면 뭐 어플의 경험이 뭔가 좀 되게 첨단 UX나 뭐 새로운 어떤 그런 고객 경험이 있을지 이런 것들이 좀 궁금해서 네, 그런 것들이 궁금했었어요.
+
+AI 인터뷰어12:19
+새로운 통신사의 서비스나 고객 서비스, 그리고 앱 경험에 대한 기대감 때문에 결정하셨다고 하셨는데, 혹시 이전에 사용하시던 통신사에서 불편했던 점이 있으셨나요?
+
+참여자12:33
+아니요, 불편한 점은 없어요. 그냥 좀 너무 오래돼서 좀 무료해졌다랄까요? 예.
+
+AI 인터뷰어12:42
+실제로 개통하는 경험은 어떠셨었나요? 이 통신사로 해야겠다는 마음이 드신 뒤에 하셨던 행동이 무엇이셨는지 궁금합니다
+
+참여자12:58
+음... 저는 어, 대리점에 가서 개통을 했었었고요. 예, 어, 그래서 그냥 워낙 주변에 대리점 많으니까 들어가서 이제 저 핸드폰 바꾸려고 한다, 통신사도 같이 변경하려고 하는 거다 이렇게 하면서 상담받으면서 진행했었습니다.
+
+AI 인터뷰어13:26
+이 통신사로 해야겠다고 마음먹은 후에 대리점에 가시기 전에 혹시 다른 통신사나 요금제를 비교해보거나 알아보신 적이 있으신가요?
+
+참여자13:37
+어... 네, 그 이 제 원래 SK를 쓰다가 이제 LG U+랑 KT 중에 이제 고민을 했던 상황이고요. 인터넷에서 뭐 그냥 그 왜 요즘에는 개통하면은 뭐 그런 스마트 스피커 같은 것도 있고 그런 사은품도 뭐가 있는지 그런 것도 좀 알아보기도 했었고 그다음에 이제 뭐 실제로 그 사용하는 멤버십 어플이나 멤버십 그 뭐 웹사이트나 이런 거는 어떻게 되어 있는지 이런 것도 좀 찾아보긴 했습니다.
+
+AI 인터뷰어14:17
+멤버십 앱이나 웹사이트 경험을 찾아보셨다고 했는데, 혹시 어떤 점들을 비교해보셨고 어떤 결과가 있었는지 좀 더 자세히 말씀해주실 수 있나요?
+
+참여자14:30
+어, 네, 어, 일단은 저는 그냥 뭐 새로운 뭐 앱 디자인이나 새로운 웹사이트 디자인 아니면 그 안에 어떤 새로운 기능이 있는지에 대해서 그냥 기본적으로 좀 호기심이 있어서 근데 이제 SKT 같은 경우는 제가 오랫동안 써봤는데 그냥 특별히 이렇게 흥미로운 게 있고 그러진 않았던 것 같아서요. 뭐 디자인도 좀 이제 오래돼서 무료하기도 하고 그래서 조금 더 이제 좀 신선하고 흥미로운 걸 찾다가 찾고 찾으려고 했었고 왠지 아무래도 LG가 그래도 이제 스팟 기업이잖아요. 조금 더 이제 그런 어, 그렇죠? 일반 사기업, 대기업이니까 아, 이쪽은 좀 더 이런 서비스 쪽이 더 잘 되어 있겠지라는 좀 막연한 기대감에 어, 그래서 LG로 선택을 했던 것 같아요.
+
+AI 인터뷰어15:27
+그렇게 개통하신 이후에 초반 인상이 어떠셨는지 궁금합니다. 첫 2~3일 동안 새로운 통신사와 새로운 핸드폰을 사용해보셨을 때, 어떠셨었나요?
+
+참여자15:40
+어, 이제 아무래도 음... 처음에는 이제 되게 좀 아까 말씀드린 것 같은 그런 신선함 그리고 새로운 거에 좀 이제 들떠서 취해서 막 어플들도 막 들어가서 둘러다 보고 뭐 여기는 이건 무슨 기능이지, 여기는 뭐 무슨 기능이지, 뭐 이게 뭐 어, 전화 품질은 어떤지, 뭐 스피드는 어떤지 이런 것들 되게 기대하면서 썼던 기억이 나고요. 어, 뭐 하루 이틀 정도 지나고 나니까는 이제 아무래도 어느 정도 파악이 돼서 그냥 뭐 결과적으로는 아, 크게 뭐 다르지 않구나 어, 이런 결론에 어, 나왔던 것 같습니다.
+
+AI 인터뷰어16:23
+그렇게 개통해서 쭉 사용하고 계신데요, 앞으로 이렇게 무난하게 쭉 쓸 수 있을것 같다고 생각하시나요? 아니면 다음에 또 기회가 되면 통신사던, 기기던 반드시 바꿔야겠다고 생각하시나요?
+
+참여자16:40
+아, 저는 사실 다음에 만약에 또 써야 되면은 바꿀 것 같아요. 그러니까 아까 말한 그 통화 품질이 좀 계속 조금 은근히 거슬리는 것 같아요. 그래서 그리고 이제 전화 통화는 너무 기본적인 건데도 불구하고 이렇게 불안정한 게 맞나 싶기도 하고 그래서 또 똑같이 그냥 새롭게 시도한다는 마음으로 KT를 갈지 아니면은 무난하게 문제가 없었었던 SKT로 돌아올지 어, 이거 좀 고민 중입니다.
+
+AI 인터뷰어17:16
+맨 처음 통신사 탐색부터 현재 사용하는 모든 과정에서, 특이사항 없이 무난하게 흘러갔다고 생각하시나요? 아니면 무언가 눈에 띄는, 기억에 남는 경험이나 사건, 이벤트같은게 있었던것 같으세요?
+
+참여자17:32
+어, 뭐 특별한 무난한 건 없고 그냥 네, 저는 제가 그냥 하고 싶어서 했고 검색해보고 대리점 가서 개통하고 그냥 특별히 무난, 무난했던 것 같아요.
+
+AI 인터뷰어17:45
+만약 주변에 지인이 통신사를 어디로 할 지 고민하고 있어서 귀하께 추천을 구하는 상황을 가정해보겠습니다. 귀하께서는 대표 통신사 3사 중, 어떤 통신사로 하라고 추천하실 것 같으신가요?
+
+참여자18:00
+지금 저한테는 SKT를 하라고 할 것 같아요.
+
+AI 인터뷰어18:10
+SKT를 추천하신다면, 이전 통신사 경험과 비교했을 때 어떤 점이 더 좋다고 생각하시나요?
+
+참여자18:19
+어, 뭐 그냥 그거보다는 말씀드린 것처럼 그냥 그냥 문화, 제가 무난하고 무료했다라고 느꼈던 게 사실 이런 장애나 사고가 없어서 되게 좋았던 거라는 거를 이제 뒤늦게 깨닫게 되는 거죠. 그래서 어, LG를 경험해보니까 아, 그냥 무난한 게 좋았구나 그래서 결국에는 SKT가 그렇게 더 안정적일 수 있다라는 생각이 들어서 그냥 안정적이고 탈 없이 쓸 수 있게 SKT를 추천할 것 같습니다.
+
+AI 인터뷰어18:57
+반대로 어떤 통신사는 절대 추천을 안 하시겠나요?
+
+참여자19:02
+저는 LG U+는 추천 안 할 것 같아요.
+
+AI 인터뷰어19:08
+LG U+를 추천하지 않으시는 특별한 이유가 있으신가요?
+
+참여자19:14
+아까 말씀드린 것처럼 그 통화가 너무 불안정한 게 전화 통화라는 아주 기본적인 기능이 이렇게 불안정한다 그러면 조금 되게 실망이 컸던 것 같습니다.
+
+AI 인터뷰어19:29
+통신사로부터 불만족스러운 경험을 하셨을 때, 고객에게 어떤 조치나 대응을 해주는것이 바람직하다고 생각하시나요?
+
+참여자19:39
+아무래도 예를 들면 제가 그렇게 통신 경험이 안 좋았을 때 바로 이제 그러면은 이 이슈를 제기를 해서 그 통신 품질이 개선될 수 있게 뭐 실제로 개선도 이루어지고 저한테 그런 부분들이 소통이 되기를 기대하는데 뭐 그런 것도 딱히 뭐 있었던 것 같진 않습니다.
+
+AI 인터뷰어20:07
+오늘 인터뷰 참여해주셔서 감사합니다. 사례비 지급을 위해 담당자가 1~2일 이내로 연락 드릴 예정입니다. 감사합니다`,
+
+p2: `AI 인터뷰어00:00
+안녕하세요 반갑습니다, 오늘 시간 내서 인터뷰에 참여해주셔서 감사합니다. 대화는 약 30분에서 40분 정도 진행될 예정입니다. 제가 드리는 질문을 들으신 뒤, 답변을 하시면 되고, 답변이 끝나시면 활성화되는 버튼을 눌르시면 답변이 입력이 됩니다. 그럼 준비 되셨을까요?
+
+참여자00:19
+네
+
+참여자00:21
+음 뭐, 핸드폰 바꾸면서 어쩔 수 없이 바꾸게 됐습니다.
+
+AI 인터뷰어00:21
+그럼 시작해보겠습니다. 우선 최근에 통신사를 변경하셨다고 알고 있습니다. 변경을 해야겠다고 마음 먹으신 계기가 있으신가요?
+
+AI 인터뷰어00:47
+핸드폰을 바꾸면서 어쩔 수 없이 통신사를 변경하셨다고 하셨는데, 혹시 기존 통신사에 불만족스러웠던 점은 없으셨나요?
+
+참여자00:59
+파킹이 없었고 지금이랑 비슷한 것 같습니다. 딱히 없었고.
+
+AI 인터뷰어01:14
+기존 통신사에 특별히 불만족스러운 점은 없으셨던 건가요?
+
+참여자01:20
+네.
+
+AI 인터뷰어01:27
+현재 통신사 전에 사용하던 통신사는 어디였나요? 그리고 당시 사용하시던 스마트폰 브랜드는 무엇이었나요?
+
+참여자01:36
+음... KT였고 그 당시에 아이폰 11 쓰고 있었습니다.
+
+AI 인터뷰어01:53
+아이폰을 사용하면서 통신 품질 관련해서 불만스러웠던 사례가 있으셨는지 궁금합니다
+
+참여자02:02
+통신품질이면 전화를 말하는 걸까요, 아니면 데이터나 문자 같은 걸 말하는 걸까요?
+
+AI 인터뷰어02:15
+네, 통화 품질, 데이터 속도, 문자 수발신 등 통신과 관련된 전반적인 품질을 말씀드리는 겁니다. 혹시 아이폰 11을 사용하시면서 이 중에서 불만스러웠던 경험이 있으셨을까요?
+
+참여자02:35
+딱히 불만스러웠던 점은 없었습니다.
+
+AI 인터뷰어02:53
+현재 통신사와, 현재 단말기의 조합에 대한 의견이 궁금합니다. 과거부터 경험하셨던 통신 품질을 비교했을 때 현재의 조합은 어떤 편인가요? 가장 맘에드시는지, 가장 별로인지?
+
+참여자03:08
+그냥 계속 비슷한 편인데 지금 쓰는 데가 유플러스인데 KT보다 처음에 조금 느리다는 생각이 들기는 했었는데 5G가 보편화되면서는 큰 문제 없이 쓰고 있습니다.
+
+AI 인터뷰어03:35
+현재 통신사 및 단말기 조합에 대해 전반적으로 만족하시는지요?
+
+참여자03:43
+네, 만족합니다.
+
+AI 인터뷰어03:52
+잘 알겠습니다. 현재 통신사에 대한 경험에 대해서 조금 더 질문 드리겠습니다. 일단, 현재 통신사의 네트워크 품질에 대해서는 만족스러운 편이신가요?
+
+참여자04:05
+음, 나쁘지 않은 것 같고 잘 터지기는 하는데 음... 한 번씩 잘 안 될 때가 있긴 한데 이게 그 장소의 문제인 건지 아니면 제 기기의 문제인 건지 근데 뭐 별 큰 문제는 없이 쓰고 있습니다.
+
+AI 인터뷰어04:47
+데이터가 한 번씩 잘 안 될 때가 있다고 하셨는데, 혹시 어떤 상황에서 그런 문제가 주로 발생하나요?
+
+참여자04:58
+최근에는 거의 그런 적 없긴 한데 음... 어딜 갔을 때 안 터졌더라. 아, 옛날 좀 옛날이긴 한데 한 명은 KT, 한 명은 SKT, 한 명은 LG 이렇게 셋이서 문자를 보내는 걸 했었나? 근데 속도가 제가 쓰는 유플러스가 제일 느렸어가지고 그때 그냥 어, 여기가 제일 느리구나 했었던 기억이 있습니다.
+
+AI 인터뷰어05:49
+네, 예전에 문자 보내는 속도가 느렸던 경험이 있으셨군요. 혹시 통화할 때도 비슷한 불편함이 있으셨을까요?
+
+참여자05:58
+최근에 통화를 잘 안 해가지고 잘 모르겠긴 한데 그동안 통화했을 때는 별 문제 없이 했었습니다.
+
+AI 인터뷰어06:21
+통화 음질은 깨끗한 편인가요?
+
+참여자06:28
+음질 자체는 괜찮은 것 같습니다. 그리고 또 그냥 아이폰을 쓰니까 그 데이터 쓰는 페이스타임으로도 많이 통화, 영상통화 같은 거 해가지고 그냥 일반 통화는 잘 모르겠습니다.
+
+AI 인터뷰어06:58
+데이터가 잘 안 될 때가 있다고 하셨는데, 혹시 특정 장소에서 그런 현상이 더 자주 발생하나요?
+
+참여자07:08
+근데 최근에는 없었고 이것도 거의 한 몇 년 된 됐을 때인 것 같은데 약간 오지나 산 같은 데 가면 조금 안 됐었던 것 같은데 최근에는 거의 그런, 최근에는 없습니다 그런 적.
+
+AI 인터뷰어07:35
+최근에는 데이터가 끊김 없이 안정적이라고 하셨는데, 혹시 예전에 오지나 산 같은 곳에서 데이터가 잘 안 됐던 경험이 있으셨다고 하셨잖아요. 그때 어떤 상황이었는지 조금 더 자세히 말씀해주실 수 있을까요?
+
+참여자07:52
+아, 근데 너무 오래돼서 잘 기억이 안 나고 갤럭시 S3 쓰던 시절에 이야기라서 10년도 더 돼서 잘 기억이 안 납니다.
+
+AI 인터뷰어08:15
+네, 알겠습니다. 그럼 혹시 데이터 속도에 대해서는 어떻게 생각하시나요?
+
+참여자08:24
+그냥 뭐 제 방이 거실에 있는 공유기에서 뭔데 그래서 가끔은 그냥 와이파이 쓰는 것보다 방에서도 데이터 쓰는 게 더 빨라서 속도에는 큰 불만이 없습니다.
+
+AI 인터뷰어08:51
+통신사 쪽에서 네트워크 관련해서 안내를 받아보신 적이 있으신가요?
+
+참여자08:58
+음... 그, 아, 지금 왜 때문인지 지금 정확히 기억이 안 나는데 한 번 유플러스 인터넷이, 아, 아니다 KT가 인터넷이 나갔었나? 와, 그때 KT 쓸 때인데 첫 번째는 아현동 그 기지국에서 불나서 근데 또 그때 하필 홍대에 약속이 있어서 아현 지나면서 데이터 안 터져서 그거 관해서 안내 한 번 받았었던 적이 있었고 그다음에 또 KT였는데 인터넷 쓰다가 그때도 뭐 무슨 이슈로 인터넷이 안 되는데 제가 시험을 봐야 돼가지고 온라인 시험 막 급하게 그때 SKT도 안 되고 KT도 안 됐던 것 같은데 그래서 급하게 LG 공유기를 쓰는 카페를 찾아서 시험을 봤었던 적이 있었는데 그리고 그때는 안내를 따로 안 해줬, 안내해줬었나? 그때도 KT에서 안내를 해줬었던 것 같긴 합니다.
+
+AI 인터뷰어10:13
+네, 안내받으셨던 경험에 대해 말씀해주셨는데요. 혹시 와이파이 설정법에 대한 안내를 받으신 적도 있으신가요?
+
+참여자10:22
+아, 그거 맨 처음에 공유기 설치해주실 때 설정법 알려주셨던 것 같습니다.
+
+AI 인터뷰어10:43
+네, 공유기 설치 시 설정법 안내를 받으셨군요. 혹시 갤럭시나 아이폰처럼 기기별로 네트워크 수신 감도 차이에 대한 안내를 받으신 적이 있으신가요?
+
+참여자10:54
+어, 그런 적은 없는 것 같습니다.
+
+AI 인터뷰어11:05
+현재의 통신사와 단말기를 사용하면서 가장 통신 품질이 불편했던 경우를 한번 떠올려봐주세요, 앞서 언급 하셨던 포인트와 겹쳐도 괜찮습니다. 해당 상황은 언제 어떤식으로 발생했던 불편함이었나요?
+
+참여자11:22
+근데 우리나라에서는 크게 불편했던 점이 없었고 이제 꼽자면 여행 갔을 때 근데 그쪽 나라 통신사 문제여가지고 여행 갔을 때 막 엄청 느린 일본 여행 갔을 때 엄청 느렸던 것 같은데 우리나라 통신사가 아니라서 국내에서는 거의 불편한 점이 없었고 단말기도 딱히, 아, 좀 무거운 거 말고는 통신 품질에 대해서는 불만이 없습니다.
+
+AI 인터뷰어12:07
+혹시 아사모 라는 온라인 커뮤니티를 알고 계신가요? 이런 커뮤니티를 통해 문제 해결이나 정보를 얻거나 하는게 있으신가요?
+
+참여자12:17
+아사모 알고 있습니다. 그리고 제가 가끔 아이폰 검색이 안 되는 오류가 나는데 그때 한 번 검색해봤고 또 가끔 아이폰에 대해서 궁금하면 한 번 똑같은 질문한 사람이 있는데 찾아보는 편입니다.
+
+AI 인터뷰어12:39
+감사합니다. 살짝 다른 주제로 넘어가보겠습니다. 이번에 통신사 변경을 하실 때 당시의 상황이 조금 궁금합니다. 일단 다른 통신사 대비 현재 통신사로 해야겠다는 '결정' 은 어떻게 내리신 건가요?
+
+참여자12:56
+그 다 같이 핸드폰 바꾸, 핸드폰이랑 인터넷을 다 바꾸면서 그 기기 할인이었나? 그런 것 때문에 그냥 가족들 전체랑 인터넷까지 다 변경을 했습니다.
+
+AI 인터뷰어13:23
+기기 할인 외에 혹시 다른 프로모션이나 사은품 같은 혜택도 고려하셨나요?
+
+참여자13:31
+그거는 뭐 그냥 주면 좋고 안 하면 말고 그냥 그런 느낌.
+
+AI 인터뷰어13:41
+실제로 개통하는 경험은 어떠셨었나요? 이 통신사로 해야겠다는 마음이 드신 뒤에 하셨던 행동이 무엇이셨는지 궁금합니다
+
+참여자13:51
+근데 뭐 딱히 제가 해야 될 건 없고 다 돼져 있고 유심만 끼우면 돼서 크게 따로 한 건 없었습니다.
+
+AI 인터뷰어14:03
+그렇게 개통하신 이후에 초반 인상이 어떠셨는지 궁금합니다. 첫 2~3일 동안 새로운 통신사와 새로운 핸드폰을 사용해보셨을 때, 어떠셨었나요?
+
+참여자14:15
+그냥 새 핸드폰이라서 일단 좀 좋았고 아, 새 폰이다. 그 통신사는 크게 의미를 두지 않고 쓰고 있어서
+
+AI 인터뷰어14:30
+그렇게 개통해서 쭉 사용하고 계신데요, 앞으로 이렇게 무난하게 쭉 쓸 수 있을것 같다고 생각하시나요? 아니면 다음에 또 기회가 되면 통신사던, 기기던 반드시 바꿔야겠다고 생각하시나요?
+
+참여자14:45
+음... 좀 무거워서 바꾸고 싶은 마음도 있긴 한데 좀 비싸서 그냥 이게 고장 날 때까지 계속 쓸 것 같습니다.
+
+AI 인터뷰어15:07
+무게와 비용 외에 '무난하게 쭉 쓸 수 있다'고 생각하시는 구체적인 이유가 있을까요?
+
+참여자15:15
+어떤 지금 크게 불편하지 않고 모양도 예쁘고 이미 이제 다 제가 원하는 대로 세팅을 해놔서 그냥 안 바, 안 바꿔도 똑같이 들어오니까 그렇긴 한데 큰 불편함이 없어서가 제일 큰 것 같습니다.
+
+AI 인터뷰어15:46
+맨 처음 통신사 탐색부터 현재 사용하는 모든 과정에서, 특이사항 없이 무난하게 흘러갔다고 생각하시나요? 아니면 무언가 눈에 띄는, 기억에 남는 경험이나 사건, 이벤트같은게 있었던것 같으세요?
+
+참여자16:05
+음... 솔직히 일 없이 무난하게 흘러갔다고 생각합니다.
+
+AI 인터뷰어16:22
+만약 주변에 지인이 통신사를 어디로 할 지 고민하고 있어서 귀하께 추천을 구하는 상황을 가정해보겠습니다. 귀하께서는 대표 통신사 3사 중, 어떤 통신사로 하라고 추천하실 것 같으신가요?
+
+참여자16:39
+제일 저렴한 걸로 나갈 것 같아요. 다 비슷해야 느끼기에는 3, 4 다 비슷하고 뭐 SKT도 개인정보 유출, KT도 유출, 뭐 보안도 문제, 유플러스도 보안도 문제 이래서 어디가 더 낫다고 딱히 생각하질 않습니다.
+
+AI 인터뷰어17:11
+제일 저렴한 통신사를 추천하신다면, 혹시 요금제나 프로모션 등 구체적으로 어떤 부분을 고려해서 추천하시나요?
+
+참여자17:22
+일단 저는 무제한 요금제를 써가지고 무제한 요금제가 좀 저렴하면 할인을 많이 받을 수 있으면 그런 걸 고려해서 쓰라고 할 것 같습니다.
+
+AI 인터뷰어17:42
+반대로 어떤 통신사는 절대 추천을 안 하시겠나요?
+
+참여자17:51
+그래도 뭐 굳이 추천 안 할 이유도 없을 것 같긴 한데 음... 아까랑 반대로 또 굳이 추천 안 할 이유도 없는 것 같습니다. 다 비슷해서.
+
+AI 인터뷰어18:14
+통신사로부터 불만족스러운 경험을 하셨을 때, 고객에게 어떤 조치나 대응을 해주는것이 바람직하다고 생각하시나요?
+
+참여자18:25
+요금을 좀 할인해준다거나 음... 돈을 보내고 관련된 비용, 비용 관련된 걸 해주는 게 제일 고객으로서 바라는 지점이 아닐까.
+
+AI 인터뷰어18:46
+오늘 인터뷰 참여해주셔서 감사합니다. 사례비 지급을 위해 담당자가 1~2일 이내로 연락 드릴 예정입니다. 감사합니다`,
+
+cheol: `AI 인터뷰어00:02
+안녕하세요
+
+참여자00:02
+네, 안녕하세요.
+
+AI 인터뷰어00:06
+그럼 시작해보겠습니다. 아이폰을 쓰고 계시죠? 아이폰을 사용한 전체 기간은 약 얼마정도 되시나요?
+
+참여자00:15
+음, 저는 아이폰을 한 3년 정도 쓴 것 같습니다.
+
+AI 인터뷰어00:40
+그렇군요, 3년 정도 사용하셨네요. 혹시 아이폰 이전에 다른 브랜드의 스마트폰을 사용해보신 적도 있으신가요?
+
+참여자00:50
+어, 갤럭시도 사용은 해본 적 있어요.
+
+AI 인터뷰어00:57
+갤럭시를 사용해보셨군요. 그럼 갤럭시와 비교했을 때, 아이폰만의 어떤 점이 더 좋아서 계속 사용하게 되시는 건가요?
+
+참여자01:07
+그냥 뭔가 전반적으로 디자인이나 어, 사용 경험이 더 스무스하고 깔끔한 것 같습니다.
+
+AI 인터뷰어01:22
+그렇군요, 깔끔한 사용 경험 때문에 아이폰을 선호하시는군요. 혹시 아이폰 외에 아이패드나 애플워치 등 다른 애플 기기도 함께 사용하고 계신가요?
+
+참여자01:34
+네, 저 그 애플 노트북이랑 아이패드도 사용하고 있습니다.
+
+AI 인터뷰어01:46
+그렇군요, 여러 기기를 함께 사용하고 계시네요. 혹시 아이폰과 노트북, 아이패드를 서로 연동해서 파일 공유나 작업 연속성 같은 기능을 평소에도 자주 활용하시는 편인가요?
+
+참여자01:59
+네, 뭐 에어드롭으로 자료 주고받는 거 자주 합니다.
+
+AI 인터뷰어02:07
+아이폰이 계속 새로 출시 되잖아요? 단말기를 바꾸는 주기가 대략 어떻게 되는 편이세요?
+
+참여자02:15
+저는 한 3, 3년에 한 번 정도 하는 것 같습니다.
+
+AI 인터뷰어02:23
+3년 정도 사용하시고 새 기기로 바꾸실 때, 기존에 쓰던 사진이나 앱 데이터 같은 자료들은 보통 어떤 방식으로 옮기시는 편인가요?
+
+참여자02:34
+어, 뭐 아이클라우드로 되는 것도 있는 것 같고, 뭐 카카오 같은, 카카오 메시지도 뭔가 클라우드로 연동이 되는 것 같아서 어, 크게 어렵게 데이터 연동이 어려웠던 적은 없는 것 같아요.
+
+AI 인터뷰어02:54
+현재 사용중인 통신사는 어디인가요?
+
+참여자02:59
+저는 SKT 사용하고 있습니다.
+
+참여자02:59
+아니요, 미리 사용해 보진 않았습니다.
+
+AI 인터뷰어03:09
+SKT를 사용하신 지는 대략 어느 정도 되셨나요?
+
+참여자03:14
+1년 반 정도 된 것 같아요.
+
+AI 인터뷰어03:22
+그렇군요. 혹시 현재 사용하고 계신 요금제는 대략 월 얼마 정도 나오시나요?
+
+참여자03:29
+저는 12만 원 정도 되는 것 같습니다.
+
+AI 인터뷰어03:40
+그렇군요. 매달 나가는 그 요금은 주로 어떤 방식으로 납부하고 계신가요?
+
+참여자03:47
+음, 신용카드 자동 결제로 납부되고 있어요.
+
+AI 인터뷰어03:55
+그렇군요. 혹시 그 요금은 본인 명의의 카드로 직접 납부하고 계신가요?
+
+참여자04:02
+네, 제명이 카드로 직접 납부합니다.
+
+AI 인터뷰어04:12
+그렇군요. 답변 감사합니다. 혹시 지금 사용하시는 SKT로 변경하시기 전에는 어떤 통신사를 이용하셨나요?
+
+참여자04:22
+어, 이전에는 어, LG 플러스 사용해 봤었습니다.
+
+AI 인터뷰어04:35
+그렇군요. 그럼 이전에 LG U+를 이용하실 때는 대략 어느 정도 기간 동안 사용하셨나요?
+
+참여자04:44
+그거 한 1년, 2년 정도 사용했던 것 같아요.
+
+AI 인터뷰어04:55
+최근에 통신사 변경을 하셨던 당시의 기억을 떠올리면서 말씀 해주세요. 먼저 빠르게 확인 차, 통신사 변경은 온라인으로 하셨나요? 아니면 오프라인 대리점에서 하셨나요?
+
+참여자05:07
+음, 저는 온라인에서 했습니다.
+
+AI 인터뷰어05:21
+그렇군요. 그럼 당시 통신사 변경을 위해 구체적으로 어떤 사이트나 플랫폼을 이용하셨는지 기억하시나요?
+
+참여자05:31
+어, 그때 아마 제가 어, SKT 공식 웹사이트를 방문했던 걸로 기억합니다.
+
+AI 인터뷰어06:01
+SKT 공식 웹사이트를 이용하셨군요. 가입을 진행하시는 과정에서 혹시 시스템 오류나 복잡한 절차 때문에 불편하거나 막혔던 순간은 없으셨나요?
+
+참여자06:13
+음, 그런 거는 딱히 없었지만 뭔가 그 인증하고 로그인할 때 제가 뭐 음, 비밀번호도 기억이 안 나고 뭐 그런 것 때문에 어, 조금 거슬렸던 기억은 있는 것 같아요.
+
+AI 인터뷰어06:42
+그렇군요, 로그인 과정에서 조금 번거로우셨겠네요. 그럼 가입 신청을 완료하신 시점부터 실제 단말기를 수령하시기까지는 며칠 정도가 걸리셨나요?
+
+참여자06:55
+음, 한 이틀 걸렸던 걸로 기억합니다.
+
+AI 인터뷰어07:12
+그렇군요, 이틀 만에 받으셨다면 생각보다 빠르게 도착한 편이네요. 혹시 처음에 안내받았던 배송 일정보다 더 늦어지거나 지연되는 일은 없었나요?
+
+참여자07:25
+어, 하루 정도 지연되긴 했었어요.
+
+AI 인터뷰어07:40
+그렇군요, 예정보다 하루 정도 늦게 도착해서 조금 당황스러우셨을 것 같아요. 당시 배송이 지연되었을 때 느끼셨던 불만의 정도가 어느 정도였는지 궁금합니다. 1번 미미했다, 2번 불편했다, 3번 답답했다, 4번 이탈하고 싶을 정도로 분노스러웠다 중에서 골라주실 수 있을까요?
+
+참여자08:03
+그냥 미미했다.
+
+AI 인터뷰어08:14
+배송이 지연되었을 때 통신사 측에서 미리 상황을 알려주거나 별도의 안내를 해주는 등, 어떤 케어를 해주었다면 더 좋았을 것 같다고 생각하시나요?
+
+참여자08:28
+어, 근데 이거 어차피 통신사의 문제가 아니라 뭐 배송업체의 문제였기 때문에 특별히 통신사 쪽에서 뭘 해줘야 된다고 생각은 안 하고요. 뭐 만약에 안내를 해준다면 되게 배송사와 소통을 긴밀하게 하는 통신사라는 느낌을 받았을 것 같긴 합니다.
+
+AI 인터뷰어09:03
+가입 신청을 하신 후 단말기를 받기까지, 통신사로부터 배송 상황이나 개통 절차와 관련해 안내 메시지를 받으셨던 기억이 있으신가요? 기억나는 내용이 있다면 무엇이든 말씀해 주세요.
+
+참여자09:19
+음, 그냥 가입 완료됐다라는 메시지랑 뭐 출고됐다는 메시지 정도, 그리고 송장 번호 이런 거 전달받았었어요.
+
+AI 인터뷰어09:38
+그렇군요. 그럼 단말기가 배송되기를 기다리시는 동안, 새 기기를 받으면 가장 먼저 해보고 싶었거나 기대되었던 점이 있으셨나요?
+
+참여자09:49
+네, 저는 어, 일단은 이제 새로운 단말기를 어, 새로운 단말기를 이제 받아서 언박싱을 하면서 약간 이 뭐 막 맨 처음에 이제 깔끔하게 비닐 뜯고 어, 그런 순간을 되게 기대하면서 기다렸던 것 같습니다.
+
+AI 인터뷰어10:31
+기대하셨던 언박싱 순간이 드디어 왔을 때, 박스를 처음 열어보던 당시의 기억이 어떠셨나요? 포장 상태나 구성품을 꺼낼 때의 느낌 등 구체적으로 기억나는 부분이 있으신지 궁금합니다.
+
+참여자10:46
+일단 상품이 깔끔하게 잘 오긴 왔고요. 어, 그래서 이제 뜬 뜯고 이제 네, 포장이 포장이 잘 되어 있어서 그리고 이제 여러 가지 구성품 빼고 하는 것도 다 되게 좋았습니다.
+
+AI 인터뷰어11:15
+그렇게 깔끔하게 포장된 새 단말기를 마주하셨을 때, 언박싱 과정 전체를 통틀어 가장 기억에 남거나 인상 깊었던 순간은 언제였나요?
+
+참여자11:27
+음, 그냥 처음에 딱 열어서 단말기를 제가 눈으로 마주했던 그 순간이었던 것 같습니다.
+
+AI 인터뷰어11:38
+이 당시에 생각의 흐름이 궁금합니다. 통신사를 바꿔야겠다가 먼저 떠오르셨는지, 아니면 단말기를 바꿔야겠다가 먼저 떠오르셨는지 궁금합니다
+
+참여자12:02
+어, 저는 통신사 변경이 먼저라고 생각했었어요.
+
+AI 인터뷰어12:19
+그렇다면 어떤 계기로 통신사를 먼저 바꿔야겠다고 마음먹게 되셨는지 그 이유가 궁금합니다.
+
+참여자12:27
+어, 그 개인정보 유출 사건 때문에 통신사 교체하기로 마음먹었습니다.
+
+AI 인터뷰어12:48
+그때 통신사를 변경하시기로 결정하면서, 관련 정보를 찾기 위해 주로 어떤 온라인 커뮤니티나 오프라인 매장 같은 채널들을 살펴보셨나요?
+
+참여자13:06
+그렇죠, 엄마랑 교회 가. 저는 네이버 카페랑 유튜브 봤었어요.
+
+AI 인터뷰어13:25
+네이버 카페나 유튜브에서 정보를 찾아보셨군요. 그 채널들에서 보신 정보들 중에 지금도 기억에 남거나, 통신사를 결정하는 데 특히 중요하게 작용했던 내용이 있었나요?
+
+참여자13:43
+어, 그냥 물병에 담긴 물이 있을 것 같아요. 핸드폰으로 자동으로 녹음을 한 거를 바로 GPT한테 올릴 수 있는 기능이 있다는 것을 알게 됐는데, 그게 되게 매력을 가지게 했던 기능이었습니다.
+
+AI 인터뷰어14:12
+그 기능이 정말 매력적이었군요. 혹시 통신사를 변경하실 때, 요금 할인이나 사은품 같은 프로모션이나 이벤트 요소들도 결정에 영향을 주었는지 궁금합니다.
+
+참여자14:25
+네, 그런 것도 어느 정도는 영향을 주긴 했습니다.
+
+AI 인터뷰어14:39
+그렇다면 구체적으로 어떤 프로모션이나 혜택이 통신사를 결정하는 데 가장 큰 영향을 주었는지 말씀해 주실 수 있을까요?
+
+참여자14:49
+어, 그 AI 스피커를 같이 주는 프로모션이 있었어서 그거 안 그래도 AI 스피커가 필요했어가지고 그게 조금 더 눈길이 갔었습니다.
+
+AI 인터뷰어15:16
+그렇군요, 필요한 물품을 사은품으로 받을 수 있는 점이 큰 매력이었네요. 혹시 여러 통신사 중에서 최종적으로 지금 사용 중인 곳을 선택하게 된 결정적인 이유가 그 프로모션 외에 또 있었을까요?
+
+참여자15:32
+어 일단은 원래 통신사에서는 개인정보 이슈 때문에 이탈을 하려고 했던 거고, 다른 경쟁사랑 비교했을 때는 조금 더 브랜드 이미지가 더 더 뭔가 아무래도 기업 사기업이다 보니까 대기업이다 보니까 좀 더 믿음하지 않을까라는 생각이 있었습니다.
+
+AI 인터뷰어16:16
+통신사 변경을 결정하시면서 단말기도 함께 교체하셨는지 궁금합니다.
+
+참여자16:23
+네, 교체했었고 아까 온라인으로 어, 네 교체했었습니다.
+
+AI 인터뷰어16:42
+그렇군요, 단말기도 함께 교체하셨군요. 혹시 어떤 계기로 단말기까지 새로 바꾸어야겠다고 마음먹게 되셨나요?
+
+참여자16:51
+아, 어차피 통신사 변경할 때 단말기 되게 좋은 가격으로 바꿀 수 있게 해서 뭐 안 바꿀 이유가 없었던 것 같습니다.
+
+AI 인터뷰어17:18
+그렇군요, 좋은 가격에 단말기를 바꿀 수 있는 기회라 놓치기 어려우셨겠네요. 혹시 그 단말기는 온라인과 오프라인 중 어떤 채널을 통해 구매하셨나요?
+
+참여자18:17
+아, 온라인으로 보내겠습니다.
+
+AI 인터뷰어18:36
+그렇군요, 온라인으로 구매하셨군요. 혹시 구매하시기 전에 해당 단말기를 오프라인 매장 등에서 직접 만져보거나 미리 사용해 보신 적이 있으신가요?
+
+AI 인터뷰어19:03
+단말기 개통할 때 USIM이랑 ESIM 중에 무엇을 선택하셨나요?
+
+참여자19:09
+저는 유심이요.
+
+AI 인터뷰어19:15
+그렇군요. 혹시 eSIM 대신 일반 유심을 선택하신 특별한 이유가 있으신가요?
+
+참여자19:22
+음, 아니요, 그냥 항상 그냥 유심으로 하는 게 일반적이라서 큰 생각 없이 그냥 유심을 했습니다.
+
+AI 인터뷰어19:34
+개통하는 과정 중에서 통신사로부터 안내와 가이드를 받으셨었나요?
+
+참여자19:41
+음, 네, 안내 받았죠. 네.
+
+AI 인터뷰어19:59
+그렇군요. 혹시 대리점 직원을 통해서 직접 설명을 들으셨나요, 아니면 문자나 카톡 같은 비대면 채널로 안내를 받으셨나요?
+
+참여자20:13
+문자가 많이 왔었어요. 온라인으로 신청을 했기 때문에.
+
+AI 인터뷰어20:27
+그 문자로 어떤 내용들을 안내받으셨나요? 그리고 그 내용들이 실제 개통 과정을 진행하시는 데 얼마나 도움이 되었는지 궁금합니다.
+
+참여자20:37
+그냥 뭐 개통해 주셔서 감사합니다. 뭐 개통 신청이 접수됐습니다, 이런 내용들이었고. 어, 뭐 개통 이후에는 어떤 것들을 하면 된다라는 그런 문자도 있긴 있었던 것 같아요.
+
+AI 인터뷰어21:03
+답변 감사합니다. 그럼 그 안내 문자들에 적힌 내용들이 실제 개통 절차를 직접 진행하실 때, '이걸 보고 하니 참 편했다'거나 혹은 '오히려 더 헷갈렸다'는 식으로 실질적인 도움이 되었는지 그 체감도가 어떠셨는지 궁금합니다.
+
+참여자21:22
+음 그냥 둘 다 아니고요. 그냥 있어도 없어도 크게 상관없었을 것 같아요.
+
+AI 인터뷰어21:34
+단말기 개통이 완료된 바로 직후 시점을 떠올려봐주세요. 개통이 완료된 직후에 통신사로 부터 받은 안내가 있으셨나요?
+
+참여자21:44
+네, 개통 완료된 직후에는 뭐 개통 축하드린다, 다음과 같은 서비스들을 사용해 볼 수 있다, 뭐 이런 뭐 사용할 수 있는 서비스, 부가 서비스, 혜택 이런 것들을 문자로 쫙 받았던 것 같습니다.
+
+AI 인터뷰어22:07
+그 안내 문자들에 적힌 내용들이 실제 개통 직후에 서비스를 이용하시거나 설정을 하실 때, 구체적으로 어떤 면에서 도움이 되었는지 혹은 아쉬웠는지 조금 더 자세히 말씀해 주실 수 있을까요?
+
+참여자22:23
+음, 둘 다 아니었던 것 같아요. 그냥 너무 길기도 했고 어차피 막 부가 서비스나 이런 거 많이 안 써가지고 그냥 그런 게 왔구나 하고 뭐 별로 크게 신경을 주진 않았던 것 같습니다.
+
+AI 인터뷰어22:43
+단말기 개통이 완료된 후 약 2주 정도 동안통신사로 부터 받은 안내가 있으셨나요?
+
+참여자22:50
+음, 아니요, 없었던 것 같아요.
+
+AI 인터뷰어22:58
+다음 몇가지 항목들에 대해서 충분히 안내를 받으셨었는지 생각해봐주세요. 먼저, 전반적으로 단말기를 설정하는 방법에 대해서 특별히 안내를 받았거나, 통신사로부터 도움을 받았던게 있으셨나요?
+
+참여자23:15
+음, 네, 그 처음에 말했던 그 가이드 문자에 뭐 단말기 설정 관련해서 내용이 있었던 것 같습니다.
+
+AI 인터뷰어23:33
+그 가이드 문자에는 구체적으로 어떤 설정, 예를 들면 APN 설정이나 네트워크 연결 같은 내용이 포함되어 있었나요?
+
+참여자23:43
+어, 그런 건 아니고 그냥 뭐 보안 서비스가 있고 뭐 로밍 이런 얘기였던 것 같아요.
+
+AI 인터뷰어24:01
+그때 받으셨던 보안 서비스나 로밍 관련 안내 내용이 실제 단말기를 사용하시거나 설정하시는 데에 실질적으로 도움이 되었나요?
+
+참여자24:10
+아니요, 별로 도움 되진 않았습니다.
+
+AI 인터뷰어24:19
+데이터를 옮기는 방법에 대해서 특별히 안내를 받았거나, 통신사로부터 도움을 받았던게 있으셨나요?
+
+참여자24:27
+아니요, 없었습니다.
+
+AI 인터뷰어24:35
+구독 서비스에 대해서 특별히 안내를 받았거나, 통신사로부터 도움을 받았던게 있으셨나요?
+
+참여자24:44
+네, 그 처음에 받았던 문자에 구독 서비스 내용들이 좀 있었어요.
+
+AI 인터뷰어24:54
+그때 받으셨던 문자 메시지에는 구체적으로 어떤 구독 서비스에 대한 내용이 담겨 있었나요?
+
+참여자25:01
+음, 뭐 그 컬러링이나 뭐 스팸 방지 이런 문자였던 것 같습니다.
+
+AI 인터뷰어25:13
+그때 받으신 문자 메시지 내용이 실제로 서비스를 이용하거나 이해하시는 데에 얼마나 도움이 되셨나요?
+
+참여자25:22
+음, 도움 됐던 것 같아요. 그 스팸 방지 문자는 실제로 그 스팸 방지 서비스는 실제로 그 문자 보고 신청하기도 했었어요.
+
+AI 인터뷰어25:37
+멤버십 혜택에 대해서 특별히 안내를 받았거나, 통신사로부터 도움을 받았던게 있으셨나요?
+
+참여자25:44
+네, 멤버십 혜택도 그 처음 받았던 문자에 담겨 있었습니다.
+
+AI 인터뷰어25:56
+그 문자에 담겨 있던 멤버십 혜택 내용은 구체적으로 어떤 것이었나요? 혹시 텍스트로 설명되어 있었는지, 아니면 상세 내용을 확인할 수 있는 링크가 포함되어 있었는지 궁금합니다.
+
+참여자26:10
+음, 그냥 뭐 뭐 이 가입한 고객한테 어떤 뭐 뭐 할인 쿠폰이나 이런 거 이용하려면 어떻게 할 수 있는지 안내해 주는 그런 내용이었던 것 같습니다.
+
+AI 인터뷰어26:29
+그 안내 문자를 받으셨을 때, 실제로 그 혜택을 활용해 보셨나요? 아니면 내용 자체가 고객님께 실질적으로 도움이 된다고 느끼셨는지 궁금합니다.
+
+참여자26:41
+음, 실제로는 사용해 보진 않았는데 도움은 됐던 것 같아요. 그러니까 뭐 이런 할인 쿠폰이 있는 거 알 수 있는 건 좋은 정보 같긴 합니다.
+
+AI 인터뷰어26:58
+보안 서비스에 대해서 특별히 안내를 받았거나, 통신사로부터 도움을 받았던게 있으셨나요?
+
+참여자27:07
+네, 보안 서비스도 그 처음 받았던 문자에 담겨 있었습니다.
+
+AI 인터뷰어27:16
+그 문자에 포함된 보안 서비스 안내는 구체적으로 어떤 내용이었고, 어떤 방식으로 전달받으셨나요?
+
+참여자27:25
+뭐 이제 이런 이런 류의 서비스가 있다는 것과 어떻게 신청할 수 있는지 안내해 주는 문구가 있었던 것 같아요.
+
+AI 인터뷰어27:37
+그 안내 문자를 받으셨을 때, 실제로 본인에게 도움이 되거나 유용하다고 느끼셨나요?
+
+참여자27:44
+네, 뭐 직전에 통신사에서도 개인 정보 때문에 제가 이탈을 한 거라서 이런 서비스가 있는 건 도움이 됐습니다.
+
+AI 인터뷰어27:55
+현재 통신사 이동 후 적응하기까지 어떠셨나요? 특별히 어려운 점은 없었나요?
+
+참여자28:02
+네, 없었습니다. 뭐 통신사 이동하고 이런 거 워낙 요즘 잘 돼 있어가지고.
+
+AI 인터뷰어28:12
+현재 통신사로 이동할 때 어떤점을 가장 기대하셨었나요?
+
+참여자28:17
+음, 일단은 통신이랑 네트워크가 훨씬 더 빠르고 안정적이기를 기대했었던 것 같고요. 그 다음에 이제 대기업이다 보니까 뭔가 포인트나 멤버십 혜택이 되게 다양할 것을 기대했었습니다.
+
+AI 인터뷰어28:40
+말씀해주신 네트워크 품질이나 멤버십 혜택과 같은 기대치들이 실제로 통신사를 이용하시면서 충분히 만족스럽게 충족되고 있다고 느끼시나요?
+
+참여자28:52
+통신 품질은 그렇긴 한데 멤버십 혜택은 생각보다 좀 많지는 않은 것 같아서 그 부분은 살짝 아쉬운 포인트이긴 합니다.
+
+AI 인터뷰어29:05
+만약 주변에 통신사를 변경하고 싶어하는 지인이 있다면, 본인이 현재 이용중인 통신사를 얼마나 추천해보시겠어요? 0점을 주시면 절대 추천하지 않는다, 10점을 주시면 무조건 추천한다, 입니다
+
+참여자29:20
+저는 한 8점 정도
+
+AI 인터뷰어29:27
+8점이라는 점수를 주신 데에는 어떤 이유가 있을까요? 그렇게 평가하신 구체적인 배경이 궁금합니다.
+
+참여자29:35
+음, 뭐 일단은 뭐 크게 불만족 없이 잘 쓰고 있는 게 하나가 있고요. 뭐 그냥 뭐 불만족스러운 건 없고 뭐 네, 8점도 그냥 높은 점수라고 생각해서 그냥 후하게 드렸다고 생각합니다.
+
+AI 인터뷰어30:02
+그렇다면 10점이 아닌 나머지 2점은 어떤 부분이 조금 아쉬워서 채워지지 않았다고 생각하시나요?
+
+참여자30:10
+음, 뭐 그냥 아까 말씀드린 뭐 혜택이 뭐 생각했던 것보다 조금 적은 부분도 있었고요. 뭐 가끔가다가 뭐 가끔가다가 통화하다가 좀 끊기는 경우도 살짝 있긴 한데 그런 것들인 것 같습니다.
+
+AI 인터뷰어30:35
+만약 주변에 통신사를 변경하고 싶어하는 지인이 있다면, 이번에는 현재말고, 직전에 이용했던 통신사를 얼마나 추천해보시겠어요? 0점을 주시면 절대 추천하지 않는다, 10점을 주시면 무조건 추천한다, 입니다
+
+참여자30:51
+저는 뭐 2점이죠.
+
+AI 인터뷰어31:00
+그렇게 2점이라는 낮은 점수를 주신 데에는 구체적으로 어떤 결정적인 이유가 있었을까요?
+
+참여자31:07
+뭐 그 통신사는 개인 정보가 다 유출됐기 때문에 그 거기로 다시 돌아갈 생각은 전혀 없습니다. 남들한테 추천하고 싶지도 않고요.
+
+AI 인터뷰어31:24
+이전 통신사, 현재 통신사 통틀어서 오랫동안 사용을 해보셨을 때, 결국 통신사 경험에서 가장 중요한 요소는 _______ 이다 에서 빈칸을 채워주세요.
+
+참여자31:37
+결국 이제 인터넷이 얼마나 빠르고 안정적이냐가 가장 중요한 요소 아닐까요?
+
+AI 인터뷰어31:50
+네, 네트워크 품질이 가장 중요하다는 말씀이시군요. 그렇다면 혹시 통신사를 선택할 때 흔히 강조하는 '다양한 멤버십이나 제휴 혜택' 같은 요소들은 실제 사용 경험에서 어느 정도로 중요하게 느껴지시나요?
+
+참여자32:05
+저런 건 없어도 뭐 쓰는데 큰 문제 없으니까 예, 엄청 가장 중요한 요소는 아니라고 생각합니다.
+
+AI 인터뷰어32:22
+그렇다면 통신사 선택 시 보안 측면은 어떻게 생각하시나요? 개인정보 보호나 데이터 보안 같은 요소가 통신사를 결정하거나 유지하는 데 있어 본인에게 얼마나 중요한지 궁금합니다.
+
+참여자32:36
+중요하긴 한데 뭐 저거는 사실 좀 기본으로 돼야 되는 거니까 어, 저것 때문에 다른 브랜드를 결정한다는 거는 조금 이상한 것 같습니다. 예, 모두가 기본으로 제공하는 서비스여야 되니까요.
+
+AI 인터뷰어32:59
+그렇다면 통신사에서 제공하는 다양한 부가 서비스들은 어떠신가요? 이런 부가 서비스들이 통신사를 선택하거나 유지하는 데 있어 본인에게 얼마나 중요한 요소라고 생각하시는지 궁금합니다.
+
+참여자33:12
+음, 별로 크게 중요하지 않은 것 같습니다.
+
+AI 인터뷰어33:24
+그렇다면 통신사를 선택할 때 '요금'은 어느 정도 비중을 차지하는 요소라고 생각하시나요? 요금이 통신사 결정에 있어 가장 중요한 기준이 될 수 있는지, 그 이유와 함께 말씀해 주시겠어요?
+
+참여자33:38
+요금은 중요하죠. 예, 요금은 중요한 요소라고 생각합니다.
+
+AI 인터뷰어33:51
+그렇다면 반대로, 통신사를 선택할 때 마케팅이나 광고에서 강조하지만 막상 실제로 써보면 '이건 정말 부질없다'고 느껴지는 요소가 있다면 무엇일까요? 한 가지만 꼽아주신다면 무엇인가요?
+
+참여자34:06
+아, 뭐 그 요즘에 막 AI 가지고 얘기 많이 하잖아요. 근데 그런 거는 진짜 부질없는 것 같아요. 어차피 다 그냥 인터넷이랑 전화랑 뭐 카톡 이런 거 하려고 하는 건데 AI가 어쩌고 저쩌고 이런 거는 별로 부질없는 것 같습니다.
+
+AI 인터뷰어34:27
+통신 쪽 말고, 단말기 하드웨어 측면에서 통신사 쪽에서 더 챙기거나 케어해줬으면 하는 부분이 있을까요?
+
+참여자34:36
+음, 그냥 뭐 무상 뭐 보험이나 뭐 무상 뭐 교체해 주고 이런 거 해주면 너무 좋겠죠. 아니면 굳이 중고폰 다시 판매 어, 다시 그걸 이제 리셀 해주는 거 이런 것도 좋을 것 같아요.
+
+AI 인터뷰어34:57
+통신, 네트워크의 품질 관련해서 조금이라도 불편했거나 불만이었던 경우가 있으셨나요? 아주 사소한 부분이라도 괜찮으니 한번 생각해봐주세요
+
+참여자35:08
+네, 뭐 엘리베이터 같은 거 탈 때 이제 확실히 좀 불안정한 경우가 있는데 그거는 뭐 어느 정도 이해가 되긴 하지만 그래도 이제 그런 부분까지도 어, 통신이 안정적이라면 굉장히 놀라운 경험이었을 것 같습니다.
+
+AI 인터뷰어35:35
+말씀해주신 엘리베이터 안에서의 네트워크 불안정 현상은 지금 사용 중인 통신사에서 겪으신 일인가요, 아니면 이전에 사용하던 통신사에서 겪으셨던 일인가요?
+
+참여자35:47
+음, 둘 다 이거는 둘 다 있는 일인 것 같아요.
+
+AI 인터뷰어36:00
+그렇게 엘리베이터에서 네트워크가 불안정할 때, 당시 기분은 어느 정도셨나요? 1번 미미함, 2번 불편함, 3번 답답함, 4번 분노나 포기 중에서 골라주신다면요?
+
+참여자36:15
+이번 불편함이요?
+
+AI 인터뷰어36:25
+네, 불편함을 느끼셨군요. 그런 상황이 발생했을 때, 혹시 통신사 네트워크 자체의 문제라고 생각하셨나요, 아니면 사용하시는 단말기 기기 쪽의 문제라고 생각하셨나요?
+
+참여자36:39
+이거는 통신사 네트워크의 문제라고 생각했었습니다.
+
+AI 인터뷰어36:48
+혹시 아이폰이나 갤럭시 같은 단말기 종류에 따라서도 네트워크 품질에 차이가 있을 수 있다는 사실을 알고 계셨나요?
+
+참여자36:57
+음, 아니요, 그거는 몰랐습니다.
+
+AI 인터뷰어37:07
+단말기 종류에 따라 네트워크 품질이 달라질 수 있다는 점을 이제 알게 되셨는데, 혹시 이 사실을 알고 나니 기존에 통신사 문제라고 생각하셨던 부분에 대해 생각이 조금 달라지셨나요?
+
+참여자37:21
+음, 그러면은 이게 통신사 문제가 아니라 기기 때문이었나라는 생각이 들면서 기기를 더 세심하게 검토해서 사야겠다는 생각이 드는 것 같습니다.
+
+AI 인터뷰어37:44
+네트워크나 통신 품질과 관련해서, 통신사 쪽에 민원을 넣어봤던 적이 있나요?
+
+참여자37:50
+네, 있습니다.
+
+AI 인터뷰어38:00
+그때 민원을 넣으셨던 통신사는 어디였나요?
+
+참여자38:05
+그때는 LG U+였습니다.
+
+AI 인터뷰어38:14
+당시 어떤 문제로 인해 민원을 넣으셨던 건지 구체적으로 말씀해 주실 수 있나요?
+
+참여자38:21
+아, 인터넷이 갑자기 한 10분 정도 아예 먹통이었던 경우가 있어가지고요. 예, 그때 이제 무슨 일인지 문의하러 전화해 봤었습니다.
+
+AI 인터뷰어38:40
+그때 전화로 문의하셨을 때, 통신사 측으로부터 구체적으로 어떤 조치나 답변을 받으셨나요?
+
+참여자38:49
+음, 뭐 그냥 뭐 전화할 거 딱히 뭐 뭐 와이파이를 다시 잡아보고 그런 상투적인 안내?
+
+AI 인터뷰어39:08
+그런 상투적인 안내를 받으셨을 때, 결과적으로 그 조치 내용에 대해 충분히 만족하거나 납득이 되셨나요?
+
+참여자39:17
+음, 전혀 안 됐죠.
+
+AI 인터뷰어39:25
+그 이후에 동일한 인터넷 먹통 문제가 다시 발생하지는 않았나요?
+
+참여자39:32
+발생하진 않았었는데 뭔가 근본적으로 원인 해결이 됐다는 거는 생각하지 않아서 언제든지 다시 발생할 수 있는 문제일 거다라고 생각하고 있습니다.
+
+AI 인터뷰어39:48
+통신사에서 제공하는 혜택은 잘 사용하고 계신가요?
+
+참여자39:54
+아니요, 별로 안 사용하고 있습니다.
+
+AI 인터뷰어40:05
+그렇군요. 혹시 어떤 이유 때문에 통신사에서 제공하는 혜택들을 잘 활용하지 않게 되시는 건가요?
+
+참여자40:13
+음, 그냥 막상 혜택들을 뭐 쓸 일이나 쓸 수 있는 여유 같은 게 막상 많지 않은 것 같아요.
+
+AI 인터뷰어40:30
+그렇다면 평소에 혜택을 더 쉽게 챙기거나 활용할 수 있도록 통신사 측에서 어떤 조치를 해주면 좋을 것 같다고 생각하시나요?
+
+참여자40:40
+음, 뭔가 쓸만한 혜택 같은 거를 그냥 아예 문자로 바로바로 보내주시면 더 좋을 것 같아요.
+
+AI 인터뷰어40:55
+혹시 사용하시는 아이폰 기종과 관련해서 통신사에서 제공하는 별도의 혜택이 있다는 점을 알고 계셨나요?
+
+참여자41:04
+음, 아니야, 모르고 있었어요.
+
+AI 인터뷰어41:14
+그렇다면 아이폰을 사용하시면서 통신사로부터 이런 혜택이 있으면 좋겠다 하고 평소에 기대하셨던 부분이 있으신가요?
+
+참여자41:25
+어, 뭐 아이폰이랑 뭐 다른 애플 기기랑 더 잘 쓸 수 있는 그런 가이드 이런 게 있으면 좋지 않을까요?
+
+AI 인터뷰어41:45
+현재 이용중인 보안 관련 서비스가 있으신가요?
+
+참여자41:49
+아니요, 없습니다.
+
+AI 인터뷰어41:56
+그렇다면 통신사에서 어떤 서비스나 기능을 제공해 준다면 '이 통신사가 보안에 정말 신경을 많이 쓰고 있구나'라고 느끼실 것 같으신가요?
+
+참여자42:07
+이건 생각 좀 해보겠습니다.
+
+AI 인터뷰어42:15
+생각하시는 동안, 혹시 통신사에서 제공하는 'USIM 보호 서비스'와 같은 보안 부가 서비스에 대해 들어보셨거나 이용해 보신 적이 있으신가요?
+
+참여자42:25
+음, 아니요, 들어본 적 없습니다.
+
+AI 인터뷰어42:34
+그렇군요. 그럼 혹시 통신사에서 제공하는 '피싱해킹 안심 보험' 같은 서비스에 대해서는 들어보신 적이 있으신가요?
+
+참여자42:43
+아, 아니요, 들어본 적 없습니다.
+
+AI 인터뷰어42:51
+그렇다면 통신사에서 제공하는 '보이스피싱 탐지' 서비스에 대해서는 들어보신 적이 있으신가요?
+
+참여자43:01
+아니요, 없습니다.
+
+AI 인터뷰어43:09
+보안 관련 서비스들을 아직 접해보지 못하셨군요. 그렇다면 평소에 어떤 서비스나 혜택을 경험하게 된다면 '이 통신사는 정말 보안에 진심이구나'라고 느끼실 것 같으신가요?
+
+참여자43:22
+음 그냥 뭔가 그건 잘 모르겠네요.
+
+AI 인터뷰어43:34
+통신사 전용 AI 서비스도 사용해보신 적 있으신가요? 에이닷이나 익시오 같은 서비스입니다
+
+참여자43:41
+음, 아니요, 써본 적 없습니다.
+
+AI 인터뷰어43:49
+오늘 인터뷰 참여해주셔서 감사합니다. 사례비 지급을 위해 담당자가 1~2일 이내로 연락 드릴 예정입니다. 감사합니다`
+};
+
+/* ─── CLUSTER + PARTICIPANT DATA ─── */
+const clusterData = {
+  'skt-lgu': {
+    title: 'SKT → LG U+ 전환 그룹',
+    from: 'SKT', to: 'LG U+',
+    fromClass: 'skt', toClass: 'lgu',
+    participants: [
+      {
+        id: 'p1',
+        name: '참여자 1',
+        sub: '20대 · 아이폰 · SKT → LG U+',
+        transcriptKey: 'p1'
+      }
+    ]
+  },
+  'kt-lgu': {
+    title: 'KT → LG U+ 전환 그룹',
+    from: 'KT', to: 'LG U+',
+    fromClass: 'kt', toClass: 'lgu',
+    participants: [
+      { id: 'p2', name: '참여자 2', sub: '아이폰 · KT → LG U+', transcriptKey: 'p2' }
+    ]
+  },
+  'lgu-skt': {
+    title: 'LG U+ → SKT 전환 그룹',
+    from: 'LG U+', to: 'SKT',
+    fromClass: 'lgu', toClass: 'skt',
+    participants: [
+      { id: 'cheol', name: '이철희', sub: '남 · 37세 · LG U+ → SKT', transcriptKey: 'cheol' }
+    ]
+  }
+};
+
+/* ─── MODAL LOGIC ─── */
+let currentCluster = null;
+let currentParticipant = null;
+
+function openCluster(clusterId) {
+  const data = clusterData[clusterId];
+  if (!data) return;
+  currentCluster = clusterId;
+
+  // Set header
+  document.getElementById('pillFrom').textContent = data.from;
+  document.getElementById('pillTo').textContent = data.to;
+  document.getElementById('modalTitle').textContent = data.title;
+  document.getElementById('modalCountBadge').textContent = data.participants.length + '명';
+
+  // Build participant list
+  const listEl = document.getElementById('participantList');
+  listEl.innerHTML = '';
+  data.participants.forEach((p, i) => {
+    const item = document.createElement('div');
+    item.className = 'participant-item' + (i === 0 ? ' active' : '');
+    item.dataset.pid = p.id;
+    item.innerHTML = `<span class="pi-name">${p.name}</span><span class="pi-sub">${p.sub}</span>`;
+    item.onclick = () => selectParticipant(clusterId, p.id);
+    listEl.appendChild(item);
+  });
+
+  // Load first participant
+  if (data.participants.length > 0) {
+    loadParticipant(clusterId, data.participants[0].id);
+  }
+
+  // Show modal
+  document.getElementById('participantModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function selectParticipant(clusterId, pid) {
+  document.querySelectorAll('.participant-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.pid === pid);
+  });
+  loadParticipant(clusterId, pid);
+}
+
+function loadParticipant(clusterId, pid) {
+  const data = clusterData[clusterId];
+  const p = data.participants.find(x => x.id === pid);
+  if (!p) return;
+  currentParticipant = pid;
+
+  // Update video section
+  document.getElementById('videoParticipantName').textContent = p.name + ' — 인터뷰 영상';
+  document.getElementById('videoStatusText').textContent = '녹화본 준비 중 (AI 인터뷰)';
+
+  // Parse full transcript from raw strings, merge consecutive same-speaker turns
+  const turns = parseTranscript(rawTranscripts[p.transcriptKey] || '');
+
+  // Render transcript
+  const tc = document.getElementById('transcriptContent');
+  tc.innerHTML = '';
+  turns.forEach(msg => {
+    const div = document.createElement('div');
+    div.className = 'transcript-msg ' + (msg.role === 'ai' ? 'ai-msg' : 'user-msg');
+    const roleLabel = msg.role === 'ai' ? 'AI 인터뷰어' : p.name;
+    div.innerHTML = `
+      <div class="msg-role ${msg.role}">${roleLabel}<span class="msg-time">${msg.time}</span></div>
+      <div class="msg-body">${msg.text}</div>
+    `;
+    tc.appendChild(div);
+  });
+}
+
+function closeModal() {
+  document.getElementById('participantModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('participantModal')) closeModal();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+</script>
+</body>
+</html>
