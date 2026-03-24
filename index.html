@@ -650,12 +650,17 @@ const CW = SVG_W - ML - MR, CH = SVG_H - MT - MB;
 function getX(i) { return ML + (i / (STEPS - 1)) * CW; }
 function getY(s) { return MT + (1 - s) * CH; }
 
-/* ── 단일 소스 JOURNEY: 하단 그리드 + 감정 곡선(툴팁) 동시 생성. score → emotion 자동 매핑 ── */
+/* ── 단일 소스 JOURNEY: 하단 그리드 + 감정 곡선(툴팁) 동시 생성. score → emotion 자동 매핑 ──
+   LG U+ / SKT 의 score 는 아래 리터럴 직후 `applyScoresFromVocCoding()`에서 VOC 1차 코딩 집계값으로 덮어씀. ── */
 function emotionFromScore(score) {
   if (score >= 0.58) return 'happy';
   if (score >= 0.42) return 'neutral';
   return 'frustrated';
 }
+
+const emotionColors = { happy:'#5a8a4a', neutral:'#d4a843', frustrated:'#c9504a' };
+const emotionIcons  = { happy:'😊', neutral:'😐', frustrated:'😟' };
+const emotionLabel  = { happy:'긍정', neutral:'중립', frustrated:'부담·실망' };
 
 function journeyToDataset(brandKey) {
   return JOURNEY[brandKey].map((cell, i) => ({
@@ -797,6 +802,92 @@ const JOURNEY_LGU_OPT = [
   { score: 0.60, delta: '+0.22', improvement: '모든 개선 시 NPS 3점(박민주 현재) → 7점+ 목표 가능. 참고: 이서원 현재 NPS 7점은 공시지원금 영향이 크며 "지원금 빼면 동일 수준"이라 평가. 혜택·온보딩·네트워크 개선이 실현될 경우 공시지원금 독립적인 브랜드 선호도 구축 가능.', quotes: [] }
 ];
 
+/**
+ * 인터뷰 기반 1차 코딩 테이블 (여정_VOC_점수체계_및_코딩테이블.md V01–V31) 단일 소스.
+ * 브랜드×단계(S01–S10)별 산술평균 → 0~1: (평균 − 1) / 9. VOC 없는 칸: 중립 5.0.
+ * 공통(단말) VOC는 lgu·skt 양쪽에 동일 점수로 포함. V12(S04→S05)는 개통 맥락상 S04만.
+ * KT: 테이블에 전용 VOC 없음 → JOURNEY.kt.score는 기존 placeholder 유지(apply에서 변경 안 함).
+ */
+const VOC_CODING_FIRST_PASS = [
+  { id: 'V01', brands: ['lgu'], step: 1, s: 6.5 },
+  { id: 'V02', brands: ['lgu'], step: 1, s: 3.5 },
+  { id: 'V03', brands: ['lgu'], step: 1, s: 2.0 },
+  { id: 'V04', brands: ['lgu', 'skt'], step: 2, s: 6.0 },
+  { id: 'V05', brands: ['lgu', 'skt'], step: 2, s: 4.0 },
+  { id: 'V06', brands: ['lgu', 'skt'], step: 2, s: 6.5 },
+  { id: 'V07', brands: ['skt'], step: 3, s: 5.5 },
+  { id: 'V08', brands: ['lgu'], step: 3, s: 7.0 },
+  { id: 'V09', brands: ['skt'], step: 4, s: 4.0 },
+  { id: 'V10', brands: ['lgu'], step: 4, s: 7.0 },
+  { id: 'V11', brands: ['lgu'], step: 4, s: 4.0 },
+  { id: 'V12', brands: ['lgu'], step: 4, s: 9.0 },
+  { id: 'V13', brands: ['skt'], step: 5, s: 7.0 },
+  { id: 'V14', brands: ['skt'], step: 5, s: 5.0 },
+  { id: 'V15', brands: ['lgu'], step: 5, s: 2.0 },
+  { id: 'V16', brands: ['lgu'], step: 6, s: 3.5 },
+  { id: 'V17', brands: ['lgu'], step: 6, s: 3.0 },
+  { id: 'V18', brands: ['lgu'], step: 6, s: 4.0 },
+  { id: 'V19', brands: ['skt'], step: 6, s: 3.5 },
+  { id: 'V20', brands: ['lgu'], step: 7, s: 6.0 },
+  { id: 'V21', brands: ['lgu'], step: 7, s: 4.5 },
+  { id: 'V22', brands: ['lgu'], step: 7, s: 3.5 },
+  { id: 'V23', brands: ['lgu'], step: 7, s: 2.5 },
+  { id: 'V24', brands: ['lgu'], step: 8, s: 1.5 },
+  { id: 'V25', brands: ['lgu'], step: 8, s: 4.5 },
+  { id: 'V26', brands: ['lgu'], step: 9, s: 7.5 },
+  { id: 'V27', brands: ['lgu'], step: 9, s: 5.0 },
+  { id: 'V28', brands: ['skt'], step: 10, s: 5.0 },
+  { id: 'V29', brands: ['lgu'], step: 10, s: 2.0 },
+  { id: 'V30', brands: ['lgu'], step: 10, s: 7.0 },
+  { id: 'V31', brands: ['skt'], step: 10, s: 5.0 }
+];
+
+const VOC_NEUTRAL_1_10 = 5;
+/** 이전 수동 LGU+ 대비 Opt 곡선에서 쓰이던 단계별 상승폭을 유지(개선 시나리오 상대 높이). */
+const LGU_OPT_SCORE_DELTAS = [0.12, 0.10, 0.10, 0.09, 0.13, 0.24, 0.22, 0.13, 0.13, 0.22];
+
+function round4(x) {
+  return Math.round(x * 10000) / 10000;
+}
+
+function aggregateScoresFromVocTable() {
+  const buckets = {
+    lgu: Array.from({ length: 10 }, () => []),
+    skt: Array.from({ length: 10 }, () => [])
+  };
+  for (const row of VOC_CODING_FIRST_PASS) {
+    for (const b of row.brands) {
+      if (!buckets[b]) continue;
+      buckets[b][row.step - 1].push(row.s);
+    }
+  }
+  const out = { lgu: [], skt: [] };
+  for (const key of ['lgu', 'skt']) {
+    for (let i = 0; i < 10; i++) {
+      const arr = buckets[key][i];
+      const avg = arr.length ? arr.reduce((a, x) => a + x, 0) / arr.length : VOC_NEUTRAL_1_10;
+      out[key].push(round4((avg - 1) / 9));
+    }
+  }
+  return out;
+}
+
+function applyScoresFromVocCoding() {
+  const agg = aggregateScoresFromVocTable();
+  for (let i = 0; i < 10; i++) {
+    JOURNEY.lgu[i].score = agg.lgu[i];
+    JOURNEY.skt[i].score = agg.skt[i];
+  }
+  for (let i = 0; i < 10; i++) {
+    const target = round4(Math.min(0.95, agg.lgu[i] + LGU_OPT_SCORE_DELTAS[i]));
+    JOURNEY_LGU_OPT[i].score = target;
+    const d = target - agg.lgu[i];
+    JOURNEY_LGU_OPT[i].delta = (d >= 0 ? '+' : '') + d.toFixed(2);
+  }
+}
+
+applyScoresFromVocCoding();
+
 function renderJourneyGrid() {
   const brands = [
     { key: 'lgu', rowId: 'row-lgu', cellClass: 'cell-lgu' },
@@ -821,10 +912,6 @@ function renderJourneyGrid() {
     });
   });
 }
-
-const emotionColors = { happy:'#5a8a4a', neutral:'#d4a843', frustrated:'#c9504a' };
-const emotionIcons  = { happy:'😊', neutral:'😐', frustrated:'😟' };
-const emotionLabel  = { happy:'긍정', neutral:'중립', frustrated:'부담·실망' };
 
 const svgEl = document.getElementById('journeySVG');
 const tipEl = document.getElementById('tooltip');
@@ -996,11 +1083,13 @@ function drawOptDots() {
 function showOptTip(e, d, i) {
   const curScore = JOURNEY[`lgu`][i].score;
   const pct = Math.round((d.score - curScore) * 100);
+  const emoOpt = emotionFromScore(d.score);
   tipEl.innerHTML = `
     <div class="tt-top">단계 ${i + 1} · Optimized</div>
     <div class="tt-brand"><span class="dot" style="background:#ff2e98;border:2px dashed white;outline:1px dashed #ff2e98"></span>LG U+ <span style="color:#3d7a52;font-weight:700">▲ ${pct}pt</span></div>
-    <div class="tt-emo" style="color:#3d7a52">✦ 개선 시나리오</div>
-    <div class="tt-quote" style="line-height:1.6">${d.improvement}</div>
+    <div class="tt-emo">${emotionIcons[emoOpt]} ${emotionLabel[emoOpt]} · score ${d.score.toFixed(2)}</div>
+    <div style="font-size:10px;color:#8fa3d8;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.1)">✦ 개선 시나리오</div>
+    <div class="tt-quote" style="line-height:1.6">${d.improvement || d.main || ''}</div>
   `;
   tipEl.classList.add('visible');
   positionTip(e);
@@ -1028,9 +1117,9 @@ function hideTip() { tipEl.classList.remove('visible'); }
 
 // Row visibility per filter
 function updateRows(filter) {
-  const rowLgu  = document.getElementById('row-lgu');
-  const rowSkt  = document.getElementById('row-skt');
-  const rowKt   = document.getElementById('row-kt');
+  const rowLgu = document.getElementById('row-lgu');
+  const rowSkt = document.getElementById('row-skt');
+  const rowKt  = document.getElementById('row-kt');
   if (filter === 'all') {
     rowLgu.style.display = rowSkt.style.display = rowKt.style.display = 'grid';
   } else {
