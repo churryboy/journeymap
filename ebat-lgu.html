@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="stylesheet" as="style"
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css"
+  integrity="sha384-y9k2lBaj/ETgBd4674Kql3098euvZU5fWlBcBBrlROBI6c2KDmjWhd508Rfsx9R/"
+  crossorigin="anonymous"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<title>E-BAT · LG U+ 통신 리서치 | Proby</title>
+<link rel="stylesheet" href="styles.css"/>
+<style id="lgu-ebat-theme">
+/* LG U+ 여정 맵과 정렬된 마젠타 액센트 (기본 네이비 토큰 오버라이드) */
+:root {
+  --accent-dim:  #4a1538;
+  --accent:      #c2186d;
+  --accent-hi:   #ff2e98;
+  --accent-text: #ff8ec4;
+  --accent-lt:   #ffd6ea;
+}
+.ebat-btn-ghost { border-color: rgba(255, 46, 152, 0.35); background: rgba(74, 21, 56, 0.45); }
+.ebat-btn-ghost:hover { border-color: rgba(255, 46, 152, 0.55); background: rgba(74, 21, 56, 0.75); }
+.ebat-tab.active {
+  border-color: rgba(255, 46, 152, 0.5);
+  background: rgba(74, 21, 56, 0.55);
+}
+#ebat-tooltip { border-color: rgba(255, 46, 152, 0.35); }
+</style>
+<script>
+tailwind.config = {
+  theme: { extend: { fontFamily: { display: ['Pretendard','-apple-system','BlinkMacSystemFont','system-ui','sans-serif'] } } }
+}
+</script>
+<style>
+.ebat-section { max-width:1100px; margin:0 auto; padding:0 2rem; }
+.ebat-hero { padding:7rem 0 3rem; position:relative; overflow:hidden; }
+
+/* ── stats ── */
+.ebat-stats {
+  display:grid; grid-template-columns:repeat(4,1fr);
+  gap:1px; background:rgba(37,37,45,.6);
+  border:1px solid rgba(37,37,45,.6); border-radius:1rem; overflow:hidden; margin-bottom:2rem;
+}
+.ebat-stat { background:var(--card); padding:1.6rem 1.6rem 1.35rem; transition:background .2s; }
+.ebat-stat:hover { background:rgba(30,48,80,.25); }
+.ebat-stat-label { font-size:.7rem; color:rgba(255,255,255,.35); margin-bottom:.45rem; line-height:1.4; }
+.ebat-stat-val { font-size:2.4rem; font-weight:900; letter-spacing:-.04em; line-height:1; color:rgba(255,255,255,.92); margin-bottom:.3rem; }
+.ebat-stat-val.hl { color:#5EEAD4; }
+.ebat-stat-sub { font-size:.7rem; color:rgba(255,255,255,.28); }
+
+/* ── chart card ── */
+.ebat-chart-card {
+  background:var(--card); border:1px solid rgba(37,37,45,.6);
+  border-radius:1.25rem; padding:2rem 2rem 1.75rem; margin-bottom:5rem;
+}
+canvas#ebat-canvas { width:100%; display:block; border-radius:.5rem; }
+
+/* ── toolbar ── */
+.ebat-toolbar {
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:.75rem; margin-bottom:1.25rem;
+}
+.ebat-chart-title { font-size:.82rem; font-weight:700; color:rgba(255,255,255,.38); }
+
+.ebat-btn-row { display:flex; align-items:center; gap:.5rem; }
+.ebat-icon-btn {
+  display:inline-flex; align-items:center; gap:.4rem; font-family:inherit; font-size:.78rem; font-weight:700;
+  border-radius:.6rem; padding:.42rem .85rem; cursor:pointer; transition:all .2s; border:1px solid;
+}
+.ebat-btn-ghost { color:var(--accent-text); background:rgba(30,48,80,.4); border-color:rgba(65,104,175,.3); }
+.ebat-btn-ghost:hover { background:rgba(30,48,80,.7); border-color:rgba(65,104,175,.5); }
+.ebat-btn-ghost .material-symbols-outlined { font-size:15px; }
+.ebat-btn-auto { color:rgba(255,255,255,.5); background:rgba(255,255,255,.04); border-color:rgba(255,255,255,.1); }
+.ebat-btn-auto:hover { background:rgba(255,255,255,.08); color:rgba(255,255,255,.75); border-color:rgba(255,255,255,.18); }
+.ebat-btn-auto.running { color:#86efac; background:rgba(34,197,94,.1); border-color:rgba(34,197,94,.3); animation:pulse-btn 1.8s ease-in-out infinite; }
+.ebat-btn-auto .material-symbols-outlined { font-size:15px; }
+@keyframes pulse-btn { 0%,100%{ box-shadow:0 0 0 0 rgba(34,197,94,.3); } 50%{ box-shadow:0 0 0 6px rgba(34,197,94,.0); } }
+
+/* ── FILTER TABS ── */
+.ebat-filters {
+  display:flex; align-items:center; gap:0; flex-wrap:wrap;
+  padding:.875rem 0 1.25rem; border-bottom:1px solid rgba(37,37,45,.5); margin-bottom:1.25rem;
+  row-gap:.625rem;
+}
+.ebat-filter-section { display:flex; align-items:center; gap:.35rem; }
+.ebat-filter-section + .ebat-filter-section { margin-left:.75rem; padding-left:.75rem; border-left:1px solid rgba(37,37,45,.6); }
+.ebat-filter-group-label {
+  font-size:.6rem; font-weight:900; letter-spacing:.12em; text-transform:uppercase;
+  color:rgba(255,255,255,.2); margin-right:.25rem; white-space:nowrap;
+}
+.ebat-tab {
+  font-family:inherit; font-size:.75rem; font-weight:600; padding:.32rem .75rem;
+  border-radius:999px; border:1px solid rgba(37,37,45,.7); background:transparent;
+  color:rgba(255,255,255,.38); cursor:pointer; transition:all .18s; white-space:nowrap;
+  position:relative;
+}
+.ebat-tab:hover { background:rgba(255,255,255,.05); color:rgba(255,255,255,.65); border-color:rgba(255,255,255,.15); }
+.ebat-tab.active {
+  background:rgba(30,48,80,.6); color:var(--accent-lt);
+  border-color:rgba(65,104,175,.45); font-weight:800;
+}
+.ebat-tab.active-male { background:rgba(59,130,246,.12); color:#93c5fd; border-color:rgba(59,130,246,.35); }
+.ebat-tab.active-female { background:rgba(236,72,153,.1); color:#f9a8d4; border-color:rgba(236,72,153,.3); }
+.ebat-tab .tab-count {
+  display:inline-block; font-size:.6rem; font-weight:800; margin-left:.3rem;
+  opacity:.5; vertical-align:baseline;
+}
+.ebat-tab.active .tab-count, .ebat-tab.active-male .tab-count, .ebat-tab.active-female .tab-count { opacity:.7; }
+
+/* ── filter info bar ── */
+.ebat-filter-info {
+  display:flex; align-items:center; gap:.5rem; margin-bottom:1rem;
+  font-size:.72rem; color:rgba(255,255,255,.3); min-height:18px;
+}
+.filter-info-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.filter-info-empty { color:rgba(255,255,255,.2); font-style:italic; }
+
+/* live badge */
+.live-badge {
+  display:none; align-items:center; gap:.35rem; font-size:.62rem; font-weight:800;
+  letter-spacing:.08em; text-transform:uppercase;
+  color:#86efac; padding:.2rem .65rem; border-radius:999px;
+  background:rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.25);
+}
+.live-badge.show { display:inline-flex; }
+.live-dot { width:5px; height:5px; border-radius:50%; background:#86efac; animation:blink 1s step-start infinite; }
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.1;} }
+
+/* timer */
+.timer-wrap { height:2px; background:rgba(37,37,45,.6); border-radius:1px; overflow:hidden; margin-top:1rem; display:none; }
+.timer-wrap.show { display:block; }
+.timer-fill { height:100%; background:linear-gradient(90deg,rgba(34,197,94,.3),rgba(34,197,94,.7)); border-radius:1px; width:0%; }
+
+/* legend */
+.ebat-legend {
+  display:flex; align-items:center; gap:1.25rem; flex-wrap:wrap;
+  margin-top:1.25rem; padding-top:1.25rem; border-top:1px solid rgba(37,37,45,.4);
+}
+.ebat-legend-item { display:flex; align-items:center; gap:.4rem; font-size:.7rem; color:rgba(255,255,255,.38); }
+.ebat-legend-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+
+/* tooltip */
+#ebat-tooltip {
+  position:fixed; pointer-events:none; z-index:200;
+  background:rgba(10,12,18,.97); border:1px solid rgba(65,104,175,.35); border-radius:.625rem;
+  padding:.75rem 1rem; font-family:'Pretendard',sans-serif; font-size:.78rem; color:rgba(255,255,255,.85);
+  min-width:170px; backdrop-filter:blur(16px); box-shadow:0 8px 32px rgba(0,0,0,.6);
+  opacity:0; transition:opacity .15s;
+}
+#ebat-tooltip.show { opacity:1; }
+
+/* ── BRAND DETAIL PANEL ── */
+#brand-panel-backdrop {
+  position:fixed; inset:0; background:rgba(5,5,6,.6); backdrop-filter:blur(6px);
+  z-index:300; opacity:0; pointer-events:none; transition:opacity .3s;
+}
+#brand-panel-backdrop.show { opacity:1; pointer-events:all; }
+
+#brand-panel {
+  position:fixed; top:0; right:0; bottom:0; width:400px; max-width:100vw;
+  background:#0d0f15; border-left:1px solid rgba(37,37,45,.8);
+  z-index:301; display:flex; flex-direction:column; overflow:hidden;
+  transform:translateX(100%); transition:transform .38s cubic-bezier(.16,1,.3,1);
+  box-shadow:-24px 0 80px rgba(0,0,0,.5);
+}
+#brand-panel.open { transform:translateX(0); }
+
+.bp-header {
+  display:flex; align-items:flex-start; justify-content:space-between;
+  padding:1.5rem 1.5rem 1.25rem; border-bottom:1px solid rgba(37,37,45,.6); flex-shrink:0;
+}
+.bp-brand-rank {
+  font-size:.6rem; font-weight:900; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--accent-text); margin-bottom:.35rem;
+}
+.bp-brand-name { font-size:1.6rem; font-weight:900; letter-spacing:-.03em; color:#fff; line-height:1; margin-bottom:.5rem; }
+.bp-badges { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
+.bp-badge {
+  font-size:.6rem; font-weight:900; letter-spacing:.1em; text-transform:uppercase;
+  padding:.22rem .65rem; border-radius:999px; border:1px solid;
+}
+.bp-badge-conf-high   { background:rgba(251,146,60,.15);  border-color:rgba(251,146,60,.35);  color:#fdba74; }
+.bp-badge-conf-medium { background:rgba(251,191,36,.12);  border-color:rgba(251,191,36,.35);  color:#fde68a; }
+.bp-badge-conf-low    { background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.15); color:rgba(255,255,255,.45); }
+.bp-badge-time        { background:rgba(30,48,80,.5);     border-color:rgba(65,104,175,.3);   color:var(--accent-lt); }
+.bp-badge-count       { background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.1);  color:rgba(255,255,255,.4); }
+
+.bp-close {
+  width:32px; height:32px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);
+  border-radius:.5rem; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:background .2s; flex-shrink:0; color:rgba(255,255,255,.5);
+}
+.bp-close:hover { background:rgba(255,255,255,.1); color:#fff; }
+.bp-close .material-symbols-outlined { font-size:16px; }
+
+.bp-body { flex:1; overflow-y:auto; padding:1.25rem 1.5rem 2rem; display:flex; flex-direction:column; gap:1.5rem; }
+.bp-body::-webkit-scrollbar { width:3px; }
+.bp-body::-webkit-scrollbar-thumb { background:rgba(255,255,255,.07); border-radius:2px; }
+
+/* video */
+.bp-video-wrap {
+  border-radius:.875rem; overflow:hidden; background:#000;
+  border:1px solid rgba(37,37,45,.7); position:relative;
+}
+.bp-video-wrap video { width:100%; display:block; max-height:220px; object-fit:cover; }
+.bp-video-label {
+  position:absolute; bottom:0; left:0; right:0;
+  padding:.6rem 1rem; background:linear-gradient(transparent,rgba(0,0,0,.75));
+  font-size:.68rem; font-weight:700; color:rgba(255,255,255,.7);
+  display:flex; align-items:center; gap:.4rem;
+}
+.bp-video-label .material-symbols-outlined { font-size:13px; color:rgba(255,255,255,.5); }
+
+/* section title */
+.bp-section-title {
+  font-size:.6rem; font-weight:900; letter-spacing:.14em; text-transform:uppercase;
+  color:rgba(255,255,255,.2); margin-bottom:.875rem;
+  display:flex; align-items:center; gap:.5rem;
+}
+.bp-section-title::after { content:''; flex:1; height:1px; background:rgba(37,37,45,.7); }
+
+/* quotes */
+.bp-quote {
+  background:rgba(25,25,30,.8); border:1px solid rgba(37,37,45,.6);
+  border-left:2px solid rgba(65,104,175,.5); border-radius:.75rem;
+  padding:1rem 1.125rem; margin-bottom:.75rem; transition:border-color .2s;
+}
+.bp-quote:hover { border-color:rgba(65,104,175,.4); border-left-color:rgba(65,104,175,.7); }
+.bp-quote:last-child { margin-bottom:0; }
+
+.bp-quote-icon {
+  font-size:1.5rem; line-height:1; color:rgba(65,104,175,.4);
+  font-family:Georgia,serif; margin-bottom:.5rem; display:block;
+}
+.bp-quote-text {
+  font-size:.82rem; color:rgba(255,255,255,.75); line-height:1.7; margin-bottom:.75rem;
+  font-style:italic;
+}
+.bp-quote-user {
+  display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;
+}
+.bp-user-chip {
+  display:inline-flex; align-items:center; gap:.3rem;
+  font-size:.62rem; font-weight:700; padding:.18rem .55rem;
+  border-radius:999px; background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08); color:rgba(255,255,255,.4);
+}
+.bp-user-chip .material-symbols-outlined { font-size:11px; }
+.bp-user-chip.chip-male   { background:rgba(59,130,246,.1);  border-color:rgba(59,130,246,.25);  color:#93c5fd; }
+.bp-user-chip.chip-female { background:rgba(236,72,153,.1);  border-color:rgba(236,72,153,.25);  color:#f9a8d4; }
+
+/* bubble click hint */
+.bp-hint {
+  display:flex; align-items:center; gap:.5rem; justify-content:center;
+  font-size:.68rem; color:rgba(255,255,255,.2); margin-top:-.5rem; margin-bottom:1.25rem;
+  animation:hint-fade 2s ease-in-out 1.5s forwards;
+}
+@keyframes hint-fade { to { opacity:0; } }
+.bp-hint .material-symbols-outlined { font-size:14px; }
+
+@media(max-width:768px){
+  .ebat-stats{ grid-template-columns:repeat(2,1fr); }
+  .ebat-stat-val{ font-size:1.8rem; }
+  .ebat-chart-card{ padding:1.25rem; }
+  .ebat-filter-section+.ebat-filter-section{ margin-left:.5rem; padding-left:.5rem; }
+  #brand-panel{ width:100vw; }
+}
+@media(prefers-reduced-motion:reduce){ *{ transition-duration:.01ms !important; animation-duration:.01ms !important; } }
+</style>
+</head>
+<body class="font-display text-white antialiased overflow-x-hidden">
+
+<!-- ═══ HEADER ═══ -->
+<header class="fixed top-0 left-0 right-0 z-50" style="background:rgba(10,10,11,0.7);backdrop-filter:blur(20px);border-bottom:1px solid rgba(21,34,56,0.8);">
+  <div class="max-w-[1600px] mx-auto px-6 md:px-16 h-14 flex items-center">
+    <div class="flex-1 flex items-center">
+      <a href="index.html" class="flex items-center gap-3" title="통신 3사 브랜드 여정 맵">
+        <img alt="Proby" class="h-7 w-auto" src="assets/header-white.png"/>
+        <span class="hidden sm:inline text-xs font-semibold tracking-wide" style="color:rgba(255,255,255,0.35);">LG U+ 리서치</span>
+      </a>
+    </div>
+    <nav class="hidden md:flex items-center gap-8">
+      <a href="index.html" class="text-sm font-medium transition-colors leading-none hover:opacity-90" style="color:rgba(255,255,255,0.45);">여정 맵</a>
+      <a href="ebat-lgu.html" class="text-sm font-bold transition-colors leading-none" style="color:var(--accent-lt);">E-BAT</a>
+    </nav>
+    <div class="flex-1 flex items-center justify-end">
+      <a href="index.html" class="text-sm font-bold px-5 py-2.5 rounded-full transition-all hover:opacity-90"
+         style="border:1px solid rgba(255,46,152,0.4);color:var(--accent-lt);background:rgba(74,21,56,0.35);">여정 맵 열기</a>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ HERO ═══ -->
+<section class="ebat-hero">
+  <div class="blob w-[500px] h-[500px] opacity-20" style="background:var(--accent-dim);top:-100px;left:-100px;"></div>
+  <div class="blob w-[400px] h-[400px] opacity-10" style="background:var(--accent-hi);top:50px;right:-80px;"></div>
+  <div class="ebat-section relative">
+    <div class="section-label mb-4">LG U+ · 통신 브랜드 연상</div>
+    <h1 class="text-4xl md:text-5xl font-black tracking-tight leading-tight mb-4"><span class="grad-text">E-BAT</span></h1>
+    <p class="text-base text-white/45 max-w-xl leading-relaxed mb-2">Evoked Brand Association Timeline — 통신·MVNO 컨텍스트</p>
+    <p class="text-sm text-white/30 max-w-2xl leading-relaxed">
+      번호이동·요금제·네트워크 인지도 등 <strong class="text-white/45 font-semibold">통신사 브랜드</strong>를 묻는 AI 인터뷰에서, 응답자가 떠올린 순서·속도·확신도를 시계열로 시각화합니다.<br/>
+      왼쪽에 가까울수록 질문 직후 즉각 떠오른 Top of Mind(ToM)입니다. (데모 시드 데이터 · 자동 수집은 동일 로직으로 통신사 풀에 적용)
+    </p>
+  </div>
+</section>
+
+<!-- ═══ MAIN ═══ -->
+<section class="ebat-section" style="padding-bottom:6rem;">
+
+  <!-- stats -->
+  <div class="ebat-stats">
+    <div class="ebat-stat">
+      <p class="ebat-stat-label">총 샘플 <span id="stat-filter-label" style="color:rgba(255,255,255,.18);"></span></p>
+      <p class="ebat-stat-val" id="stat-samples">0<span style="font-size:1.2rem">명</span></p>
+      <p class="ebat-stat-sub">응답자 수</p>
+    </div>
+    <div class="ebat-stat">
+      <p class="ebat-stat-label">고유 브랜드 수</p>
+      <p class="ebat-stat-val" id="stat-brands">0<span style="font-size:1.2rem">개</span></p>
+      <p class="ebat-stat-sub">연상 브랜드</p>
+    </div>
+    <div class="ebat-stat">
+      <p class="ebat-stat-label">ToM 1순위</p>
+      <p class="ebat-stat-val" style="font-size:2rem" id="stat-tom">—</p>
+      <p class="ebat-stat-sub">가장 빠른 평균 발화</p>
+    </div>
+    <div class="ebat-stat">
+      <p class="ebat-stat-label">인지-구매 정렬</p>
+      <p class="ebat-stat-val hl" id="stat-align">—</p>
+      <p class="ebat-stat-sub">ToM ≈ 구매 고려</p>
+    </div>
+  </div>
+
+  <!-- chart card -->
+  <div class="ebat-chart-card">
+
+    <!-- toolbar -->
+    <div class="ebat-toolbar">
+      <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+        <p class="ebat-chart-title">통신 브랜드 연상 타임라인 — x: 발화 시점(초) · y: 확신도 · 크기: 언급 응답자 수</p>
+        <div class="live-badge" id="live-badge"><div class="live-dot"></div>LIVE</div>
+      </div>
+      <div class="ebat-btn-row">
+        <button class="ebat-icon-btn ebat-btn-auto" id="btn-auto">
+          <span class="material-symbols-outlined" id="auto-icon">play_arrow</span>
+          <span id="auto-label">자동 수집</span>
+        </button>
+        <button class="ebat-icon-btn ebat-btn-ghost" id="btn-replay">
+          <span class="material-symbols-outlined">replay</span>재생
+        </button>
+      </div>
+    </div>
+
+    <!-- filter tabs -->
+    <div class="ebat-filters" id="filter-row">
+      <div class="ebat-filter-section">
+        <button class="ebat-tab active" data-type="all" data-val="">전체<span class="tab-count" id="tc-all"></span></button>
+      </div>
+      <div class="ebat-filter-section">
+        <span class="ebat-filter-group-label">성별</span>
+        <button class="ebat-tab" data-type="gender" data-val="남">남성<span class="tab-count" id="tc-male"></span></button>
+        <button class="ebat-tab" data-type="gender" data-val="여">여성<span class="tab-count" id="tc-female"></span></button>
+      </div>
+      <div class="ebat-filter-section">
+        <span class="ebat-filter-group-label">연령대</span>
+        <button class="ebat-tab" data-type="age" data-val="20">20대<span class="tab-count" id="tc-20"></span></button>
+        <button class="ebat-tab" data-type="age" data-val="30">30대<span class="tab-count" id="tc-30"></span></button>
+        <button class="ebat-tab" data-type="age" data-val="40">40대<span class="tab-count" id="tc-40"></span></button>
+        <button class="ebat-tab" data-type="age" data-val="50">50대+<span class="tab-count" id="tc-50"></span></button>
+      </div>
+    </div>
+
+    <!-- filter info -->
+    <div class="ebat-filter-info" id="filter-info"></div>
+
+    <canvas id="ebat-canvas" height="400"></canvas>
+
+    <div class="timer-wrap" id="timer-wrap"><div class="timer-fill" id="timer-fill"></div></div>
+
+    <div class="ebat-legend">
+      <div class="ebat-legend-item"><div class="ebat-legend-dot" style="background:#FB923C;"></div>높은 확신</div>
+      <div class="ebat-legend-item"><div class="ebat-legend-dot" style="background:transparent;border:2px solid #FBBF24;"></div>보통</div>
+      <div class="ebat-legend-item"><div class="ebat-legend-dot" style="background:rgba(255,255,255,.25);"></div>낮은 확신</div>
+      <div class="ebat-legend-item" style="margin-left:auto;font-size:.68rem;color:rgba(255,255,255,.18);">← ToM (즉각 연상)</div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══ BRAND DETAIL PANEL ═══ -->
+<div id="brand-panel-backdrop"></div>
+<aside id="brand-panel" role="dialog" aria-modal="true" aria-label="브랜드 상세">
+
+  <div class="bp-header">
+    <div>
+      <p class="bp-brand-rank" id="bp-rank">—</p>
+      <p class="bp-brand-name" id="bp-name">—</p>
+      <div class="bp-badges" id="bp-badges"></div>
+    </div>
+    <button class="bp-close" id="bp-close" aria-label="닫기">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+
+  <div class="bp-body">
+
+    <!-- video clip -->
+    <div>
+      <p class="bp-section-title">인터뷰 클립</p>
+      <div class="bp-video-wrap">
+        <video id="bp-video" src="video/123.mov" playsinline muted controls
+               preload="metadata" style="background:#000;"></video>
+        <div class="bp-video-label">
+          <span class="material-symbols-outlined">videocam</span>
+          <span id="bp-video-caption">응답자 인터뷰 영상</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- quotes -->
+    <div>
+      <p class="bp-section-title">연상 응답</p>
+      <p style="font-size:.68rem;color:rgba(255,255,255,.28);margin-bottom:.875rem;margin-top:-.5rem;">
+        Q. 해당 브랜드를 생각하면 어떤게 연상되시나요?
+      </p>
+      <div id="bp-quotes-list"></div>
+    </div>
+
+  </div>
+</aside>
+
+<div id="ebat-tooltip"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   E-BAT — chart + demographic filters + auto collection
+   ═══════════════════════════════════════════════════════ */
+
+/* ── 통신 브랜드 풀 (3사 + MVNO/알뜰) ── */
+const CARRIER_BRANDS = [
+  'LG U+', 'SKT', 'KT',
+  '헬로모바일', 'U+알뜰', 'SK 7모바일', 'KT M모바일',
+  '알뜰폰', 'LG헬로비전',
+];
+
+/* base time bias (seconds) — smaller = stronger ToM */
+const TIME_BIAS = {
+  'LG U+': 1.9, 'SKT': 2.5, 'KT': 2.8,
+  '헬로모바일': 9.5, 'U+알뜰': 10.5, 'SK 7모바일': 10.2, 'KT M모바일': 11,
+  '알뜰폰': 8.0, 'LG헬로비전': 12.5,
+};
+
+/* demographic brand affinity adjustments */
+const GENDER_ADJ = {
+  '남': { 'SKT': 0.92, 'LG U+': 0.88, 'KT': 0.94, 'SK 7모바일': 0.85, '헬로모바일': 1.08, 'U+알뜰': 1.05 },
+  '여': { 'LG U+': 0.96, 'KT': 0.93, 'U+알뜰': 1.12, 'SKT': 1.04, 'KT M모바일': 1.06 },
+};
+const AGE_ADJ = {
+  young:  { 'LG U+': 0.94, 'SKT': 0.92, 'KT': 0.93, 'U+알뜰': 0.88, 'SK 7모바일': 0.90, '헬로모바일': 1.05 },
+  middle: { 'LG U+': 0.96, 'SKT': 0.96, 'KT': 0.96, 'SK 7모바일': 1.04, 'KT M모바일': 1.06 },
+  older:  { 'LG U+': 0.94, 'SKT': 0.98, 'KT': 0.97, 'LG헬로비전': 0.92, '알뜰폰': 1.15 },
+};
+
+/* ── Seed data: 통신·MVNO 연상 (다양한 인구통계) ── */
+let DATA = [
+  // R1 여 34 — LG U+ 먼저 (지원금·전환 관심)
+  { rid: 'R1', brand: 'LG U+', time: 1.2, conf: 0.88, gender: '여', age: 34 },
+  { rid: 'R1', brand: 'SKT', time: 2.8, conf: 0.80, gender: '여', age: 34 },
+  { rid: 'R1', brand: 'KT', time: 5.4, conf: 0.74, gender: '여', age: 34 },
+  { rid: 'R1', brand: 'U+알뜰', time: 11.2, conf: 0.28, gender: '여', age: 34 },
+  // R2 남 27 — SKT ToM (보안 이슈 언급 맥락)
+  { rid: 'R2', brand: 'SKT', time: 1.3, conf: 0.86, gender: '남', age: 27 },
+  { rid: 'R2', brand: 'LG U+', time: 2.9, conf: 0.78, gender: '남', age: 27 },
+  { rid: 'R2', brand: 'KT', time: 4.8, conf: 0.72, gender: '남', age: 27 },
+  { rid: 'R2', brand: 'SK 7모바일', time: 8.1, conf: 0.58, gender: '남', age: 27 },
+  { rid: 'R2', brand: '헬로모바일', time: 11.2, conf: 0.42, gender: '남', age: 27 },
+  // R3 여 46 — 3사 모두 빠르게
+  { rid: 'R3', brand: 'KT', time: 1.0, conf: 0.92, gender: '여', age: 46 },
+  { rid: 'R3', brand: 'LG U+', time: 2.1, conf: 0.88, gender: '여', age: 46 },
+  { rid: 'R3', brand: 'SKT', time: 4.5, conf: 0.76, gender: '여', age: 46 },
+  { rid: 'R3', brand: 'KT M모바일', time: 9.5, conf: 0.46, gender: '여', age: 46 },
+  // R4 남 53 — 장기 고객 이미지
+  { rid: 'R4', brand: 'LG U+', time: 0.9, conf: 0.94, gender: '남', age: 53 },
+  { rid: 'R4', brand: 'SKT', time: 2.8, conf: 0.82, gender: '남', age: 53 },
+  { rid: 'R4', brand: 'SK 7모바일', time: 8.1, conf: 0.52, gender: '남', age: 53 },
+  { rid: 'R4', brand: '알뜰폰', time: 11.8, conf: 0.38, gender: '남', age: 53 },
+  // R5 여 31 — KT 우선
+  { rid: 'R5', brand: 'KT', time: 1.8, conf: 0.90, gender: '여', age: 31 },
+  { rid: 'R5', brand: 'LG U+', time: 3.5, conf: 0.76, gender: '여', age: 31 },
+  { rid: 'R5', brand: 'SKT', time: 5.4, conf: 0.70, gender: '여', age: 31 },
+  { rid: 'R5', brand: 'LG헬로비전', time: 10.1, conf: 0.48, gender: '여', age: 31 },
+  // R6 남 38 — 알뜰폰 포함
+  { rid: 'R6', brand: 'SKT', time: 1.3, conf: 0.86, gender: '남', age: 38 },
+  { rid: 'R6', brand: 'LG U+', time: 3.5, conf: 0.76, gender: '남', age: 38 },
+  { rid: 'R6', brand: 'KT', time: 5.4, conf: 0.74, gender: '남', age: 38 },
+  { rid: 'R6', brand: '헬로모바일', time: 9.5, conf: 0.56, gender: '남', age: 38 },
+  { rid: 'R6', brand: 'U+알뜰', time: 13.2, conf: 0.34, gender: '남', age: 38 },
+];
+let nextRID = 7;
+
+/* ── Filter state ── */
+let activeFilter = { type:'all', val:'' };
+
+function getAgeGroup(age){ return age<30?'young':age<45?'middle':'older'; }
+
+function getFilteredData(){
+  if(activeFilter.type==='all') return DATA;
+  if(activeFilter.type==='gender') return DATA.filter(r=>r.gender===activeFilter.val);
+  if(activeFilter.type==='age'){
+    const d=parseInt(activeFilter.val);
+    if(d===50) return DATA.filter(r=>r.age>=50);
+    return DATA.filter(r=>r.age>=d&&r.age<d+10);
+  }
+  return DATA;
+}
+
+/* ── Aggregation ── */
+const CONF_KO   = { high:'높음', medium:'보통', low:'낮음' };
+const CONF_TIER = v=>v>.65?'high':v>.35?'medium':'low';
+
+function aggregate(){
+  const data=getFilteredData();
+  const map={};
+  data.forEach(r=>{
+    if(!r.brand) return;
+    if(!map[r.brand]) map[r.brand]={name:r.brand,times:[],confs:[],rids:new Set()};
+    map[r.brand].times.push(r.time);
+    map[r.brand].confs.push(r.conf);
+    map[r.brand].rids.add(r.rid);
+  });
+  return Object.values(map)
+    .map(b=>{
+      const t=b.times.reduce((a,c)=>a+c,0)/b.times.length;
+      const c=b.confs.reduce((a,c)=>a+c,0)/b.confs.length;
+      return{name:b.name,t,conf:c,count:b.rids.size,tier:CONF_TIER(c)};
+    })
+    .sort((a,b)=>a.t-b.t)
+    .map((b,i)=>({...b,rank:i+1}));
+}
+
+/* ═══ CHART ══════════════════════════════════════════ */
+const canvas  = document.getElementById('ebat-canvas');
+const ctx     = canvas.getContext('2d');
+const tooltip = document.getElementById('ebat-tooltip');
+
+let W,H,CW,CH;
+const PAD={top:32,right:56,bottom:54,left:68};
+
+let vizBubbles=[],targetBubbles=[],animRaf=null;
+let introProgress=0,introStart=null;
+const INTRO_DUR=1600, LERP_SPD=0.09;
+
+let vizXMax=20,targetXMax=20;
+let vizYMin=0,vizYMax=1,targetYMin=0,targetYMax=1;
+
+function lerp(a,b,t){return a+(b-a)*t;}
+function easeOutBack(t){const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2);}
+
+function xToC(t)   {return PAD.left+((t-0)/(vizXMax-0))*CW;}
+function yToC(conf){const n=(conf-vizYMin)/(vizYMax-vizYMin||1);return PAD.top+(1-n)*CH;}
+
+function getTargetXMax(){
+  const agg=aggregate(); if(!agg.length)return 20;
+  return Math.max(20,Math.ceil(Math.max(...agg.map(b=>b.t))+4));
+}
+function getTargetYRange(){
+  const agg=aggregate(); if(!agg.length)return{min:0,max:1};
+  const cs=agg.map(b=>b.conf);
+  const mn=Math.min(...cs),mx=Math.max(...cs),pd=0.15;
+  return{min:Math.max(0,mn-pd),max:Math.min(1,mx+pd)};
+}
+
+function buildTargets(){
+  return aggregate().map(b=>{
+    const maxR=W<480?30:44,minR=W<480?16:20;
+    const r=minR+Math.log1p(b.count-1)/Math.log1p(14)*(maxR-minR);
+    return{...b,tx:xToC(b.t),ty:yToC(b.conf),tr:r};
+  });
+}
+
+function resizeCanvas(){
+  const dpr=window.devicePixelRatio||1;
+  const cssW=canvas.parentElement.getBoundingClientRect().width;
+  const cssH=Math.max(260,Math.min(400,cssW*0.42));
+  canvas.style.width=cssW+'px'; canvas.style.height=cssH+'px';
+  canvas.width=Math.round(cssW*dpr); canvas.height=Math.round(cssH*dpr);
+  ctx.scale(dpr,dpr);
+  W=cssW; H=cssH; CW=W-PAD.left-PAD.right; CH=H-PAD.top-PAD.bottom;
+}
+
+/* bubble color based on filter */
+function getBubbleColors(vb){
+  if(activeFilter.type==='gender'&&activeFilter.val==='남'){
+    if(vb.tier==='high')   return{fill:'grad-blue', stroke:null};
+    if(vb.tier==='medium') return{fill:'rgba(96,165,250,.13)',stroke:'#60a5fa'};
+    return{fill:'rgba(255,255,255,.06)',stroke:'rgba(255,255,255,.25)'};
+  }
+  if(activeFilter.type==='gender'&&activeFilter.val==='여'){
+    if(vb.tier==='high')   return{fill:'grad-pink',stroke:null};
+    if(vb.tier==='medium') return{fill:'rgba(244,114,182,.13)',stroke:'#f472b6'};
+    return{fill:'rgba(255,255,255,.06)',stroke:'rgba(255,255,255,.25)'};
+  }
+  if(vb.tier==='high')   return{fill:'grad-orange',stroke:null};
+  if(vb.tier==='medium') return{fill:'rgba(251,191,36,.14)',stroke:'#FBBF24'};
+  return{fill:'rgba(255,255,255,.06)',stroke:'rgba(255,255,255,.28)'};
+}
+
+function drawFrame(){
+  const isEmpty=getFilteredData().length===0;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='rgba(17,17,22,.55)';
+  ctx.beginPath(); ctx.roundRect(0,0,W,H,8); ctx.fill();
+
+  /* y gridlines */
+  const fSz=W<480?9:10;
+  const yRefs=[
+    {conf:vizYMin+(vizYMax-vizYMin)*.85,label:'높은 확신'},
+    {conf:vizYMin+(vizYMax-vizYMin)*.5, label:'보통'},
+    {conf:vizYMin+(vizYMax-vizYMin)*.15,label:'불확실'},
+  ];
+  yRefs.forEach(({conf,label})=>{
+    const cy=yToC(conf);
+    ctx.strokeStyle='rgba(255,255,255,.05)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(PAD.left,cy); ctx.lineTo(PAD.left+CW,cy); ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.18)';
+    ctx.font=`500 ${fSz}px Pretendard,sans-serif`;
+    ctx.textAlign='right'; ctx.fillText(label,PAD.left-8,cy+3.5);
+  });
+
+  /* x ticks */
+  const step=vizXMax<=20?2:vizXMax<=35?4:vizXMax<=50?5:10;
+  ctx.fillStyle='rgba(255,255,255,.18)';
+  ctx.font=`500 ${fSz}px Pretendard,sans-serif`;
+  ctx.textAlign='center';
+  for(let t=0;t<=vizXMax;t+=step){
+    const cx=xToC(t);
+    ctx.fillText(t===0?'0초':`${Math.round(t)}`,cx,PAD.top+CH+20);
+    ctx.strokeStyle='rgba(255,255,255,.04)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(cx,PAD.top); ctx.lineTo(cx,PAD.top+CH); ctx.stroke();
+  }
+  ctx.fillStyle='rgba(255,255,255,.18)';
+  ctx.fillText(`${Math.round(vizXMax)}초`,xToC(vizXMax),PAD.top+CH+20);
+
+  /* ToM label */
+  ctx.fillStyle='rgba(255,255,255,.1)'; ctx.font='500 9px Pretendard,sans-serif';
+  ctx.textAlign='left'; ctx.fillText('← ToM',PAD.left+4,PAD.top-12);
+
+  /* empty state */
+  if(isEmpty){
+    ctx.fillStyle='rgba(255,255,255,.18)'; ctx.font='600 13px Pretendard,sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText('이 그룹의 응답 데이터가 아직 없습니다',W/2,H/2-10);
+    ctx.font='500 11px Pretendard,sans-serif'; ctx.fillStyle='rgba(255,255,255,.1)';
+    ctx.fillText('자동 수집을 시작하거나 데이터가 쌓이면 자동으로 표시됩니다',W/2,H/2+12);
+    return;
+  }
+
+  /* bubbles */
+  vizBubbles.forEach((vb,idx)=>{
+    const alpha=vb.valpha*Math.min(1,introProgress*3-idx*0.12);
+    if(alpha<=0) return;
+    const sp=easeOutBack(Math.min(1,Math.max(0,introProgress*2.5-idx*0.2)));
+    const r=vb.vr*sp;
+    const colors=getBubbleColors(vb);
+
+    /* glow */
+    if(vb.tier==='high'&&r>0){
+      const glowColor=activeFilter.val==='남'?'59,130,246':activeFilter.val==='여'?'236,72,153':'251,146,60';
+      const g=ctx.createRadialGradient(vb.vx,vb.vy,0,vb.vx,vb.vy,r*2.4);
+      g.addColorStop(0,`rgba(${glowColor},${.13*alpha})`);
+      g.addColorStop(1,`rgba(${glowColor},0)`);
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(vb.vx,vb.vy,r*2.4,0,Math.PI*2); ctx.fill();
+    }
+
+    ctx.save(); ctx.globalAlpha=alpha;
+
+    /* fill */
+    if(colors.fill==='grad-orange'){
+      const g=ctx.createRadialGradient(vb.vx-r*.2,vb.vy-r*.25,0,vb.vx,vb.vy,r);
+      g.addColorStop(0,'#FCA668'); g.addColorStop(1,'#C0511A');
+      ctx.fillStyle=g;
+    } else if(colors.fill==='grad-blue'){
+      const g=ctx.createRadialGradient(vb.vx-r*.2,vb.vy-r*.25,0,vb.vx,vb.vy,r);
+      g.addColorStop(0,'#93c5fd'); g.addColorStop(1,'#1d4ed8');
+      ctx.fillStyle=g;
+    } else if(colors.fill==='grad-pink'){
+      const g=ctx.createRadialGradient(vb.vx-r*.2,vb.vy-r*.25,0,vb.vx,vb.vy,r);
+      g.addColorStop(0,'#f9a8d4'); g.addColorStop(1,'#be185d');
+      ctx.fillStyle=g;
+    } else {
+      ctx.fillStyle=colors.fill;
+    }
+    ctx.beginPath(); ctx.arc(vb.vx,vb.vy,r,0,Math.PI*2); ctx.fill();
+    if(colors.stroke){
+      ctx.strokeStyle=colors.stroke; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.arc(vb.vx,vb.vy,r,0,Math.PI*2); ctx.stroke();
+    }
+
+    /* multi ring */
+    if(vb.count>1){
+      ctx.strokeStyle='rgba(255,255,255,.1)'; ctx.lineWidth=1;
+      ctx.setLineDash([2,3]); ctx.beginPath(); ctx.arc(vb.vx,vb.vy,r+5,0,Math.PI*2); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    /* label */
+    const fs=W<480?8:10,fsN=W<480?9:12;
+    const textColor=vb.tier==='high'?'#fff':colors.stroke||'rgba(255,255,255,.6)';
+    ctx.fillStyle=textColor;
+    ctx.font=`900 ${fs}px Pretendard,sans-serif`; ctx.textAlign='center';
+    ctx.fillText(`#${vb.rank}`,vb.vx,vb.vy-5);
+    ctx.font=`800 ${fsN}px Pretendard,sans-serif`;
+    ctx.fillText(vb.name,vb.vx,vb.vy+9);
+
+    /* count badge */
+    if(vb.count>1&&W>=480){
+      const bx=vb.vx+r-1,by=vb.vy-r+1;
+      ctx.fillStyle='rgba(8,10,16,.9)';
+      ctx.beginPath(); ctx.arc(bx,by,9,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='rgba(65,104,175,.5)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.arc(bx,by,9,0,Math.PI*2); ctx.stroke();
+      ctx.fillStyle='#A3C2EF'; ctx.font='800 8px Pretendard,sans-serif';
+      ctx.fillText(vb.count,bx,by+3);
+    }
+    ctx.restore();
+  });
+}
+
+function tickLerp(){
+  let moving=false;
+  const axD=Math.abs(vizXMax-targetXMax)+Math.abs(vizYMin-targetYMin)+Math.abs(vizYMax-targetYMax);
+  if(axD>.001) moving=true;
+  vizXMax=lerp(vizXMax,targetXMax,LERP_SPD);
+  vizYMin=lerp(vizYMin,targetYMin,LERP_SPD);
+  vizYMax=lerp(vizYMax,targetYMax,LERP_SPD);
+
+  const fresh=buildTargets();
+  const tNames=new Set(fresh.map(b=>b.name));
+  vizBubbles=vizBubbles.filter(vb=>{
+    if(!tNames.has(vb.name)){
+      vb.valpha=lerp(vb.valpha,0,.14);
+      if(vb.valpha>.008){moving=true;return true;}
+      return false;
+    }
+    return true;
+  });
+  fresh.forEach(tb=>{
+    let vb=vizBubbles.find(v=>v.name===tb.name);
+    if(!vb){vb={name:tb.name,vx:tb.tx,vy:tb.ty,vr:0,valpha:0,rank:tb.rank,tier:tb.tier,count:tb.count};vizBubbles.push(vb);}
+    const d=Math.abs(vb.vx-tb.tx)+Math.abs(vb.vy-tb.ty)+Math.abs(vb.vr-tb.tr)+Math.abs(vb.valpha-1);
+    if(d>.15) moving=true;
+    vb.vx=lerp(vb.vx,tb.tx,LERP_SPD); vb.vy=lerp(vb.vy,tb.ty,LERP_SPD);
+    vb.vr=lerp(vb.vr,tb.tr,LERP_SPD); vb.valpha=lerp(vb.valpha,1,LERP_SPD);
+    vb.rank=tb.rank; vb.tier=tb.tier; vb.count=tb.count;
+  });
+  return moving;
+}
+
+function renderLoop(ts){
+  if(!introStart) introStart=ts;
+  introProgress=Math.min(1,(ts-introStart)/INTRO_DUR);
+  const moving=tickLerp();
+  drawFrame();
+  if(introProgress<1||moving){animRaf=requestAnimationFrame(renderLoop);}
+  else{drawFrame();animRaf=null;}
+}
+
+function startRender(resetIntro=false){
+  if(resetIntro){introStart=null;introProgress=0;}
+  targetXMax=getTargetXMax();
+  const yr=getTargetYRange(); targetYMin=yr.min; targetYMax=yr.max;
+  if(!animRaf) animRaf=requestAnimationFrame(renderLoop);
+}
+
+/* ── Stats & filter UI ── */
+function easeOutFn(t){return 1-(1-t)**3;}
+function countUp(id,target,suffix=''){
+  const el=document.getElementById(id),t0=performance.now(),dur=450;
+  (function tick(now){
+    const p=Math.min(1,(now-t0)/dur);
+    el.innerHTML=`${Math.round(easeOutFn(p)*target)}<span style="font-size:1.2rem">${suffix}</span>`;
+    if(p<1) requestAnimationFrame(tick);
+  })(performance.now());
+}
+
+function getSegmentCount(type,val){
+  if(type==='all') return new Set(DATA.map(r=>r.rid)).size;
+  if(type==='gender') return new Set(DATA.filter(r=>r.gender===val).map(r=>r.rid)).size;
+  if(type==='age'){
+    const d=parseInt(val);
+    const f=d===50?DATA.filter(r=>r.age>=50):DATA.filter(r=>r.age>=d&&r.age<d+10);
+    return new Set(f.map(r=>r.rid)).size;
+  }
+  return 0;
+}
+
+function updateTabCounts(){
+  const tabs=[
+    {elId:'tc-all',   type:'all',   val:''},
+    {elId:'tc-male',  type:'gender',val:'남'},
+    {elId:'tc-female',type:'gender',val:'여'},
+    {elId:'tc-20',    type:'age',   val:'20'},
+    {elId:'tc-30',    type:'age',   val:'30'},
+    {elId:'tc-40',    type:'age',   val:'40'},
+    {elId:'tc-50',    type:'age',   val:'50'},
+  ];
+  tabs.forEach(({elId,type,val})=>{
+    const cnt=getSegmentCount(type,val);
+    const el=document.getElementById(elId);
+    if(el) el.textContent=cnt>0?` ${cnt}`:'';
+  });
+}
+
+function updateFilterInfo(){
+  const info=document.getElementById('filter-info');
+  const filtered=getFilteredData();
+  const rids=new Set(filtered.map(r=>r.rid));
+  const agg=aggregate();
+  if(rids.size===0){
+    info.innerHTML='<span class="filter-info-empty">데이터 없음</span>';return;
+  }
+  let color='rgba(163,194,239,.6)',dotColor='rgba(65,104,175,.7)';
+  if(activeFilter.type==='gender'&&activeFilter.val==='남'){color='rgba(147,197,253,.7)';dotColor='#60a5fa';}
+  if(activeFilter.type==='gender'&&activeFilter.val==='여'){color='rgba(249,168,212,.7)';dotColor='#f472b6';}
+  const label=activeFilter.type==='all'?'전체':activeFilter.type==='gender'?`${activeFilter.val}성`:`${activeFilter.val}대${activeFilter.val==='50'?'+':''}`;
+  info.innerHTML=`
+    <div class="filter-info-dot" style="background:${dotColor};"></div>
+    <span style="color:${color};font-weight:700;">${label}</span>
+    <span>응답자 ${rids.size}명 ·</span>
+    <span>브랜드 ${agg.length}종 분석 중</span>
+  `;
+  document.getElementById('stat-filter-label').textContent=activeFilter.type!=='all'?`(${label})`:'';
+}
+
+function updateStats(){
+  const agg=aggregate();
+  const rids=new Set(getFilteredData().map(r=>r.rid)).size;
+  countUp('stat-samples',rids,'명');
+  countUp('stat-brands',agg.length,'개');
+  document.getElementById('stat-tom').textContent  =agg.length?agg[0].name:'—';
+  document.getElementById('stat-align').textContent=agg.length&&agg[0].tier==='high'?'높음':agg.length?'보통':'—';
+  updateTabCounts();
+  updateFilterInfo();
+}
+
+/* ── Filter tab click ── */
+document.querySelectorAll('.ebat-tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.ebat-tab').forEach(b=>b.classList.remove('active','active-male','active-female'));
+    const type=btn.dataset.type, val=btn.dataset.val||'';
+    activeFilter={type,val};
+    /* active class based on segment */
+    if(type==='gender'&&val==='남') btn.classList.add('active-male');
+    else if(type==='gender'&&val==='여') btn.classList.add('active-female');
+    else btn.classList.add('active');
+    /* reset axes so they re-lerp for this segment */
+    const yr=getTargetYRange(); targetYMin=yr.min; targetYMax=yr.max;
+    targetXMax=getTargetXMax();
+    startRender(true);
+    updateStats();
+  });
+});
+
+let updateTimer=null;
+function onDataChange(){
+  clearTimeout(updateTimer);
+  updateTimer=setTimeout(()=>{startRender();updateStats();},80);
+}
+
+/* ═══ AUTO COLLECTION ════════════════════════════════════ */
+const INCOME_OPT=['상','중상','중','중하','하'];
+const GENDER_OPT=['남','여'];
+
+function rnd(a,b){return Math.random()*(b-a)+a;}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+
+function getAdjustedBias(brand,gender,age){
+  let bias=TIME_BIAS[brand]||10;
+  const gAdj=(GENDER_ADJ[gender]||{})[brand]; if(gAdj) bias*=gAdj;
+  const ageGroup=getAgeGroup(age);
+  const aAdj=(AGE_ADJ[ageGroup]||{})[brand]; if(aAdj) bias*=aAdj;
+  return Math.max(0.5,bias);
+}
+
+function generateBatch(){
+  const rid=`R${nextRID++}`;
+  const n=Math.floor(rnd(3,8));
+  const gender=pick(GENDER_OPT);
+  const age=Math.floor(rnd(22,63));
+
+  const brands=[...CARRIER_BRANDS].sort(()=>Math.random()-.5).slice(0,n);
+  brands.sort((a,b)=>getAdjustedBias(a,gender,age)-getAdjustedBias(b,gender,age));
+
+  let lastTime=0;
+  return brands.map(brand=>{
+    const adjBias=getAdjustedBias(brand,gender,age);
+    const raw=adjBias*(0.72+Math.random()*0.56);
+    const t=parseFloat(Math.max(lastTime+0.4,raw).toFixed(1));
+    lastTime=t;
+
+    /* confidence from adjusted bias + demographic boost */
+    let conf=adjBias<=3?rnd(.78,.98):adjBias<=7?rnd(.52,.88):adjBias<=12?rnd(.26,.65):rnd(.08,.45);
+    if(gender==='남'&&['SKT','KT','SK 7모바일'].includes(brand)) conf+=.10;
+    if(gender==='여'&&['LG U+','KT','U+알뜰'].includes(brand)) conf+=.10;
+    if(age<35&&['LG U+','U+알뜰','SK 7모바일'].includes(brand)) conf+=.08;
+    if(age>=45&&['LG U+','SKT','KT'].includes(brand)) conf+=.06;
+    conf=Math.max(.05,Math.min(.99,conf+(Math.random()-.5)*.1));
+
+    return{rid,brand,time:t,conf,gender,age};
+  });
+}
+
+/* ── auto UI ── */
+let autoRunning=false,autoTimer=null,timerRaf=null;
+const btnAuto=document.getElementById('btn-auto');
+const autoIcon=document.getElementById('auto-icon');
+const autoLabel=document.getElementById('auto-label');
+const liveBadge=document.getElementById('live-badge');
+const timerWrap=document.getElementById('timer-wrap');
+const timerFill=document.getElementById('timer-fill');
+
+function animateTimer(dur){
+  const t0=performance.now();
+  timerFill.style.transition='none'; timerFill.style.width='0%';
+  cancelAnimationFrame(timerRaf);
+  (function tick(now){
+    const p=Math.min(1,(now-t0)/dur);
+    timerFill.style.width=(p*100)+'%';
+    if(p<1) timerRaf=requestAnimationFrame(tick);
+  })(performance.now());
+}
+function scheduleNext(){
+  if(!autoRunning) return;
+  const delay=Math.round(rnd(1000,5000));
+  animateTimer(delay);
+  autoTimer=setTimeout(()=>{
+    if(!autoRunning) return;
+    generateBatch().forEach(r=>DATA.push(r));
+    onDataChange(); scheduleNext();
+  },delay);
+}
+function startAuto(){
+  autoRunning=true;
+  btnAuto.classList.add('running');
+  autoIcon.textContent='pause'; autoLabel.textContent='수집 중지';
+  liveBadge.classList.add('show'); timerWrap.classList.add('show');
+  scheduleNext();
+}
+function stopAuto(){
+  autoRunning=false; clearTimeout(autoTimer); cancelAnimationFrame(timerRaf);
+  btnAuto.classList.remove('running');
+  autoIcon.textContent='play_arrow'; autoLabel.textContent='자동 수집';
+  liveBadge.classList.remove('show'); timerWrap.classList.remove('show');
+  timerFill.style.width='0%';
+}
+btnAuto.addEventListener('click',()=>autoRunning?stopAuto():startAuto());
+
+/* ── tooltip ── */
+canvas.addEventListener('mousemove',e=>{
+  const rect=canvas.getBoundingClientRect();
+  const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  let hit=null;
+  vizBubbles.forEach(vb=>{if(Math.hypot(mx-vb.vx,my-vb.vy)<vb.vr+8)hit=vb;});
+  if(hit){
+    const ab=aggregate().find(b=>b.name===hit.name);
+    const filtered=getFilteredData().filter(r=>r.brand===hit.name);
+    const gSplit={남:0,여:0}; filtered.forEach(r=>{if(gSplit[r.gender]!==undefined)gSplit[r.gender]++;});
+    tooltip.innerHTML=`
+      <div style="font-size:.6rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-text);margin-bottom:.3rem;">#${hit.rank} · ${CONF_KO[hit.tier]}</div>
+      <div style="font-size:.92rem;font-weight:800;color:#fff;margin-bottom:.35rem;">${hit.name}</div>
+      <div style="font-size:.72rem;color:rgba(255,255,255,.4);">평균 발화 <b style="color:rgba(255,255,255,.75)">${ab?ab.t.toFixed(1):'?'}초</b></div>
+      <div style="font-size:.72rem;color:rgba(255,255,255,.3);margin-top:.2rem;">언급 ${hit.count}명
+        ${activeFilter.type==='all'?`· 남 ${gSplit['남']} / 여 ${gSplit['여']}`:''}
+      </div>
+    `;
+    tooltip.classList.add('show');
+    tooltip.style.left=(e.clientX+16)+'px'; tooltip.style.top=(e.clientY-14)+'px';
+    canvas.style.cursor='pointer';
+  } else { tooltip.classList.remove('show'); canvas.style.cursor='default'; }
+});
+canvas.addEventListener('mouseleave',()=>tooltip.classList.remove('show'));
+
+/* ── init ── */
+document.getElementById('btn-replay').addEventListener('click',()=>startRender(true));
+
+const observer=new IntersectionObserver(entries=>{
+  if(entries[0].isIntersecting){
+    resizeCanvas(); updateStats(); startRender(true);
+    observer.disconnect();
+  }
+},{threshold:.15});
+observer.observe(canvas);
+
+window.addEventListener('resize',()=>{
+  resizeCanvas();
+  targetXMax=getTargetXMax();
+  const yr=getTargetYRange(); targetYMin=yr.min; targetYMax=yr.max;
+  if(!animRaf) animRaf=requestAnimationFrame(renderLoop);
+});
+</script>
+
+<footer style="max-width:1100px;margin:0 auto;padding:0 2rem 3rem;text-align:center;font-size:.72rem;color:rgba(255,255,255,.22);">
+  <a href="index.html" style="color:rgba(255,255,255,.38);text-decoration:none;font-weight:600;">← 통신 3사 브랜드 여정 맵</a>
+  <span style="display:block;margin-top:.5rem;">LG U+ 통신 리서치 · E-BAT 데모 · Proby 내부용</span>
+</footer>
+</body>
+</html>
